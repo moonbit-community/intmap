@@ -1,4 +1,3 @@
-
 // Big-endian Patricia Tree
 
 ///|
