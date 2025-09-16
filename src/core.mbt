@@ -1,5 +1,4 @@
-// LAST UPDATE: 2025/6/2
-// create by: myfreess@github.com
+
 // Big-endian Patricia Tree
 
 ///|
