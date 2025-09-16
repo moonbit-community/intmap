@@ -19,8 +19,8 @@ enum IntMap[T] {
 } derive(Show)
 
 ///|
-fn to_hex_string_(n : UInt) -> String {
-  let mut n = n
+fn UInt::to_hex_str(self : UInt) -> String {
+  let mut n = self
   let table = [
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
   ]
@@ -35,26 +35,26 @@ fn to_hex_string_(n : UInt) -> String {
 }
 
 ///|
-fn to_hex_string(n : Int) -> String {
-  to_hex_string_(n.reinterpret_as_uint())
+fn Int::to_hex_str(self : Int) -> String {
+  self.reinterpret_as_uint().to_hex_str()
 }
 
 ///|
 test "int to hex string" {
-  inspect(to_hex_string(0), content="00000000")
-  inspect(to_hex_string(1), content="00000001")
-  inspect(to_hex_string(16), content="00000010")
-  inspect(to_hex_string(@int.max_value), content="7FFFFFFF")
-  inspect(to_hex_string(@int.min_value), content="80000000")
-  inspect(to_hex_string(-2), content="FFFFFFFE")
-  inspect(to_hex_string(-1), content="FFFFFFFF")
-  inspect(to_hex_string(1 << 16), content="00010000")
-  inspect(to_hex_string(2147483647), content="7FFFFFFF")
+  inspect((0).to_hex_str(), content="00000000")
+  inspect((1).to_hex_str(), content="00000001")
+  inspect((16).to_hex_str(), content="00000010")
+  inspect(@int.max_value.to_hex_str(), content="7FFFFFFF")
+  inspect(@int.min_value.to_hex_str(), content="80000000")
+  inspect((-2).to_hex_str(), content="FFFFFFFE")
+  inspect((-1).to_hex_str(), content="FFFFFFFF")
+  inspect((1 << 16).to_hex_str(), content="00010000")
+  inspect((2147483647).to_hex_str(), content="7FFFFFFF")
 }
 
 ///|
 test "unsigned int to hex string" {
-  inspect(to_hex_string_(1U), content="00000001")
+  inspect(1U.to_hex_str(), content="00000001")
 }
 
 ///|
@@ -156,33 +156,23 @@ pub fn[T] insert(self : IntMap[T], key : Key, value : T) -> IntMap[T] {
 }
 
 ///|
-pub fn[T] IntMap::from_array(arr : Array[T]) -> IntMap[T] {
-  let mut intmap = IntMap::Empty
-  for i = 0; i < arr.length(); i = i + 1 {
-    intmap = intmap.insert(i, arr[i])
-  } else {
-    return intmap
-  }
-}
-
-///|
-pub fn[T] get_opt(self : IntMap[T], k : Key) -> T? {
+pub fn[T] get(self : IntMap[T], k : Key) -> T? {
   match self {
     Empty => None
     Leaf(..) as leaf => if leaf.key == k { Some(leaf.value) } else { None }
     Branch(..) as br_node =>
       if k.reinterpret_as_uint() <= br_node.prefix.reinterpret_as_uint() {
-        br_node.left.get_opt(k)
+        br_node.left.get(k)
       } else {
-        br_node.right.get_opt(k)
+        br_node.right.get(k)
       }
   }
 }
 
 ///|
 pub fn[T] op_get(self : IntMap[T], key : Key) -> T {
-  match self.get_opt(key) {
-    None => abort("IntMap::op_get: key = \{key}")
+  match self.get(key) {
+    None => abort("IntMap::op_get: invalid key \{key}")
     Some(value) => value
   }
 }

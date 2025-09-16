@@ -1,12 +1,15 @@
+// Generated using `moon info`, DON'T EDIT IT
 package "myfreess/intmap"
 
 // Values
 fn[T] merge(combine~ : (T, T) -> T, IntMap[T], IntMap[T]) -> IntMap[T]
 
+// Errors
+
 // Types and methods
 type IntMap[T]
 fn[T] IntMap::from_array(Array[T]) -> Self[T]
-fn[T] IntMap::get_opt(Self[T], Int) -> T?
+fn[T] IntMap::get(Self[T], Int) -> T?
 fn[T] IntMap::insert(Self[T], Int, T) -> Self[T]
 fn[T] IntMap::op_get(Self[T], Int) -> T
 impl[T : Show] Show for IntMap[T]
