@@ -96,7 +96,7 @@ fn[T] join(
   p1 : Prefix,
   t1 : IntMap[T],
   p2 : Prefix,
-  t2 : IntMap[T]
+  t2 : IntMap[T],
 ) -> IntMap[T] {
   let mask = gen_mask(p1, p2)
   if zero(p1, mask) {
@@ -111,7 +111,7 @@ fn[T] insert_with(
   self : IntMap[T],
   combine~ : (T, T) -> T,
   key : Key,
-  value : T
+  value : T,
 ) -> IntMap[T] {
   match self {
     Empty => Leaf(key~, value~)
@@ -144,7 +144,8 @@ fn[T] insert_with(
   }
 }
 
-///| insert a new kay-value pair or replace original value if this key existed
+///|
+/// insert a new kay-value pair or replace original value if this key existed
 pub fn[T] insert(self : IntMap[T], key : Key, value : T) -> IntMap[T] {
   fn combine(new : T, old : T) -> T {
     ignore(old)
@@ -198,10 +199,25 @@ test "intmap insert and lookup" {
 }
 
 ///|
+test "edge case" {
+  let mut foo = IntMap::Empty
+  foo = foo.insert(@int.min_value, "min")
+  foo = foo.insert(@int.max_value, "max")
+  foo = foo.insert(0, "zero")
+  foo = foo.insert(-1, "neg1")
+  foo = foo.insert(1, "pos1")
+  inspect(foo[@int.min_value], content="min")
+  inspect(foo[@int.max_value], content="max")
+  inspect(foo[0], content="zero")
+  inspect(foo[-1], content="neg1")
+  inspect(foo[1], content="pos1")
+}
+
+///|
 pub fn[T] merge(
   combine~ : (T, T) -> T,
   left : IntMap[T],
-  right : IntMap[T]
+  right : IntMap[T],
 ) -> IntMap[T] {
   fn merge(left : IntMap[T], right : IntMap[T]) -> IntMap[T] {
     match (left, right) {
