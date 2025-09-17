@@ -127,7 +127,7 @@ fn[T] join(
 }
 
 ///|
-fn[T] insert_with(
+pub fn[T] IntMap::insert_with(
   self : IntMap[T],
   combine~ : (T, T) -> T,
   key : Key,
@@ -166,17 +166,12 @@ fn[T] insert_with(
 
 ///|
 /// insert a new kay-value pair or replace original value if this key existed
-pub fn[T] insert(self : IntMap[T], key : Key, value : T) -> IntMap[T] {
-  fn combine(new : T, old : T) -> T {
-    ignore(old)
-    new
-  }
-
-  self.insert_with(combine~, key, value)
+pub fn[T] IntMap::insert(self : IntMap[T], key : Key, value : T) -> IntMap[T] {
+  self.insert_with(combine=(left, _) => left, key, value)
 }
 
 ///|
-pub fn[T] get(self : IntMap[T], k : Key) -> T? {
+pub fn[T] IntMap::get(self : IntMap[T], k : Key) -> T? {
   match self {
     Empty => None
     Leaf(..) as leaf => if leaf.key == k { Some(leaf.value) } else { None }
@@ -190,7 +185,7 @@ pub fn[T] get(self : IntMap[T], k : Key) -> T? {
 }
 
 ///|
-pub fn[T] op_get(self : IntMap[T], key : Key) -> T {
+pub fn[T] IntMap::op_get(self : IntMap[T], key : Key) -> T {
   match self.get(key) {
     None => abort("IntMap::op_get: invalid key \{key}")
     Some(value) => value
@@ -224,7 +219,8 @@ test "edge case" {
 }
 
 ///|
-pub fn[T] merge(
+/// 
+pub fn[T] IntMap::merge_with(
   combine~ : (T, T) -> T,
   left : IntMap[T],
   right : IntMap[T],

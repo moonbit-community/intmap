@@ -150,3 +150,10 @@ pub fn[X, Y] IntMap::map(
       Branch(prefix~, mask~, left=left.map(f), right=right.map(f))
   }
 }
+
+///|
+/// The (left-biased) merge of two intmaps
+/// It prefers the first map when duplicate keys are encountered
+pub fn[T] IntMap::merge(self : IntMap[T], other : IntMap[T]) -> IntMap[T] {
+  IntMap::merge_with(combine=(left, _) => left, self, other)
+}
