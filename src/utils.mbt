@@ -40,10 +40,50 @@ pub fn[T] IntMap::to_hashmap(self : IntMap[T]) -> @hashmap.HashMap[Int, T] {
 
 ///|
 pub fn[T] IntMap::iter(self : IntMap[T]) -> Iter[T] {
-  ...
+  Iter::new(fn(yield_) {
+    fn go(node : IntMap[T]) {
+      match node {
+        IntMap::Empty => IterContinue
+        IntMap::Leaf(value~, ..) =>
+          if yield_(value) is IterEnd {
+            IterEnd
+          } else {
+            IterContinue
+          }
+        IntMap::Branch(left~, right~, ..) =>
+          if go(left) is IterEnd {
+            IterEnd
+          } else {
+            go(right)
+          }
+      }
+    }
+
+    go(self)
+  })
 }
 
 ///|
 pub fn[T] IntMap::iter2(self : IntMap[T]) -> Iter2[Int, T] {
-  ...
+  Iter2::new(fn(yield_) {
+    fn go(node : IntMap[T]) {
+      match node {
+        IntMap::Empty => IterContinue
+        IntMap::Leaf(key~, value~) =>
+          if yield_(key, value) is IterEnd {
+            IterEnd
+          } else {
+            IterContinue
+          }
+        IntMap::Branch(left~, right~, ..) =>
+          if go(left) is IterEnd {
+            IterEnd
+          } else {
+            go(right)
+          }
+      }
+    }
+
+    go(self)
+  })
 }
