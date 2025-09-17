@@ -220,7 +220,7 @@ test "edge case" {
 
 ///|
 /// 
-pub fn[T] IntMap::merge_with(
+pub fn[T] IntMap::union_with(
   combine~ : (T, T) -> T,
   left : IntMap[T],
   right : IntMap[T],

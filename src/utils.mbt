@@ -184,8 +184,8 @@ pub fn[T] IntMap::filter(self : IntMap[T], p : (T) -> Bool) -> IntMap[T] {
 }
 
 ///|
-/// The (left-biased) merge of two intmaps
+/// The (left-biased) union of two maps
 /// It prefers the first map when duplicate keys are encountered
-pub fn[T] IntMap::merge(self : IntMap[T], other : IntMap[T]) -> IntMap[T] {
-  IntMap::merge_with(combine=(left, _) => left, self, other)
+pub fn[T] IntMap::union(self : IntMap[T], other : IntMap[T]) -> IntMap[T] {
+  IntMap::union_with(combine=(left, _) => left, self, other)
 }
