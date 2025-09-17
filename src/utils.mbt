@@ -159,6 +159,16 @@ pub fn[T] IntMap::iter2(self : IntMap[T]) -> Iter2[Int, T] {
 }
 
 ///|
+pub fn[T] IntMap::each(
+  self : IntMap[T],
+  f : (Int, T) -> Unit raise?,
+) -> Unit raise? {
+  for k, v in self.iter2() {
+    f(k, v)
+  }
+}
+
+///|
 pub fn[X, Y] IntMap::map(
   self : IntMap[X],
   f : (X) -> Y raise?,

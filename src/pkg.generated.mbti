@@ -11,6 +11,7 @@ import(
 
 // Types and methods
 type IntMap[T]
+fn[T] IntMap::each(Self[T], (Int, T) -> Unit raise?) -> Unit raise?
 fn[T] IntMap::empty() -> Self[T]
 fn[T] IntMap::filter(Self[T], (T) -> Bool) -> Self[T]
 fn[T] IntMap::from_hashmap(@hashmap.HashMap[Int, T]) -> Self[T]
