@@ -21,6 +21,7 @@ fn[T] IntMap::from_map(Map[Int, T]) -> Self[T]
 fn[T] IntMap::get(Self[T], Int) -> T?
 fn[T] IntMap::insert(Self[T], Int, T) -> Self[T]
 fn[T] IntMap::insert_with(Self[T], combine~ : (T, T) -> T, Int, T) -> Self[T]
+fn[T] IntMap::intersection(Self[T], Self[T]) -> Self[T]
 fn[T] IntMap::intersection_with(combine~ : (T, T) -> T, Self[T], Self[T]) -> Self[T]
 fn[T] IntMap::is_empty(Self[T]) -> Bool
 fn[T] IntMap::iter(Self[T]) -> Iter[(Int, T)]
@@ -28,6 +29,7 @@ fn[T] IntMap::iter2(Self[T]) -> Iter2[Int, T]
 fn[T] IntMap::keys(Self[T]) -> Iter[Int]
 fn[X, Y] IntMap::map(Self[X], (X) -> Y raise?) -> Self[Y] raise?
 fn[T] IntMap::op_get(Self[T], Int) -> T
+fn[T] IntMap::remove(Self[T], Int) -> Self[T]
 fn[T] IntMap::size(Self[T]) -> Int
 fn[T] IntMap::to_hashmap(Self[T]) -> @hashmap.HashMap[Int, T]
 fn[T] IntMap::to_map(Self[T]) -> Map[Int, T]

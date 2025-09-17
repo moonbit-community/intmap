@@ -22,6 +22,20 @@ pub fn[T] IntMap::empty() -> IntMap[T] {
 }
 
 ///|
+fn[T] IntMap::branch(
+  prefix~ : Prefix,
+  mask~ : Mask,
+  left~ : IntMap[T],
+  right~ : IntMap[T],
+) -> IntMap[T] {
+  match (left, right) {
+    (Empty, t) => t
+    (t, Empty) => t
+    (_, _) => IntMap::Branch(prefix~, mask~, left~, right~)
+  }
+}
+
+///|
 pub fn[T] IntMap::is_empty(self : IntMap[T]) -> Bool {
   match self {
     Empty => true
@@ -170,8 +184,41 @@ pub fn[T] IntMap::insert(self : IntMap[T], key : Key, value : T) -> IntMap[T] {
   self.insert_with(combine=(left, _) => left, key, value)
 }
 
+///|
 pub fn[T] IntMap::remove(self : IntMap[T], key : Key) -> IntMap[T] {
-  ...
+  fn go(tree : IntMap[T]) -> (Bool, IntMap[T]) {
+    match tree {
+      Empty => (false, tree)
+      Leaf(..) as leaf =>
+        if leaf.key == key {
+          (true, Empty)
+        } else {
+          (false, tree)
+        }
+      Branch(prefix~, mask~, left~, right~) =>
+        if key.reinterpret_as_uint() <= prefix.reinterpret_as_uint() {
+          // select left subtree
+          let (changed, left) = go(left)
+          if changed {
+            let tree = IntMap::branch(prefix~, mask~, left~, right~)
+            (true, tree)
+          } else {
+            (false, tree)
+          }
+        } else {
+          // select right subtree
+          let (changed, right) = go(right)
+          if changed {
+            let tree = IntMap::branch(prefix~, mask~, left~, right~)
+            (true, tree)
+          } else {
+            (false, tree)
+          }
+        }
+    }
+  }
+
+  go(self).1
 }
 
 ///|
@@ -280,5 +327,52 @@ pub fn[T] IntMap::intersection_with(
   left : IntMap[T],
   right : IntMap[T],
 ) -> IntMap[T] {
-  ...
+  fn go(left : IntMap[T], right : IntMap[T]) -> IntMap[T] {
+    match (left, right) {
+      (_, Empty) => Empty
+      (Empty, _) => Empty
+      (Leaf(key~, value~), t) =>
+        match t.get(key) {
+          None => Empty
+          Some(v) => Leaf(key~, value=combine(value, v))
+        }
+      (t, Leaf(key~, value~)) =>
+        match t.get(key) {
+          None => Empty
+          Some(v) => Leaf(key~, value=combine(v, value))
+        }
+      (
+        Branch(prefix=p, mask=m, left=s_left, right=s_right) as s,
+        Branch(prefix=q, mask=n, left=t_left, right=t_right) as t,
+      ) =>
+        if m == n && p == q {
+          // The trees have the same prefix. intersect the subtrees
+          Branch(
+            prefix=p,
+            mask=m,
+            left=go(s_left, t_left),
+            right=go(s_right, t_right),
+          )
+        } else if m < n && match_prefix(key=q, prefix=p, mask=m) {
+          // q contains p. Merge t with a subtree of s
+          if zero(q, m) {
+            go(s_left, t)
+          } else {
+            go(s_right, t)
+          }
+        } else if m > n {
+          // p contains q. Merge s with a subtree of t
+          if zero(p, n) {
+            go(s, t_left)
+          } else {
+            go(s, t_right)
+          }
+        } else {
+          // The prefixes disagree
+          Empty
+        }
+    }
+  }
+
+  go(left, right)
 }

@@ -194,7 +194,7 @@ pub fn[T] IntMap::filter(self : IntMap[T], p : (T) -> Bool) -> IntMap[T] {
 }
 
 ///|
-/// The (left-biased) union of two maps
+/// The left-biased union of two maps
 /// It prefers the first map when duplicate keys are encountered
 pub fn[T] IntMap::union(self : IntMap[T], other : IntMap[T]) -> IntMap[T] {
   IntMap::union_with(combine=(left, _) => left, self, other)
@@ -205,4 +205,11 @@ pub impl[T] Add for IntMap[T] with add(self, other) {
   self.union(other)
 }
 
-
+///|
+/// The left-biased intersection of two maps
+pub fn[T] IntMap::intersection(
+  self : IntMap[T],
+  other : IntMap[T],
+) -> IntMap[T] {
+  IntMap::intersection_with(combine=(left, _) => left, self, other)
+}
