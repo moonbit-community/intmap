@@ -152,6 +152,18 @@ pub fn[X, Y] IntMap::map(
 }
 
 ///|
+pub fn[T] IntMap::filter(self : IntMap[T], p : (T) -> Bool) -> IntMap[T] {
+  let mut res = IntMap::empty()
+  for k, v in self.iter2() {
+    if p(v) {
+      res = res.insert(k, v)
+    }
+  } else {
+    return res
+  }
+}
+
+///|
 /// The (left-biased) merge of two intmaps
 /// It prefers the first map when duplicate keys are encountered
 pub fn[T] IntMap::merge(self : IntMap[T], other : IntMap[T]) -> IntMap[T] {
