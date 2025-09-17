@@ -222,6 +222,15 @@ pub fn[T] IntMap::remove(self : IntMap[T], key : Key) -> IntMap[T] {
 }
 
 ///|
+test "IntMap::remove() keeps physical equality when no change" {
+  let mut foo = IntMap::Empty
+  foo = foo.insert(1, "one")
+  foo = foo.insert(2, "two")
+  foo = foo.insert(3, "three")
+  assert_true(physical_equal(foo.remove(-1), foo))
+}
+
+///|
 pub fn[T] IntMap::get(self : IntMap[T], k : Key) -> T? {
   match self {
     Empty => None
