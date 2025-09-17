@@ -17,6 +17,28 @@ enum IntMap[T] {
 } derive(Show)
 
 ///|
+pub fn[T] IntMap::empty() -> IntMap[T] {
+  IntMap::Empty
+}
+
+///|
+pub fn[T] IntMap::is_empty(self : IntMap[T]) -> Bool {
+  match self {
+    Empty => true
+    _ => false
+  }
+}
+
+///|
+pub fn[T] IntMap::size(self : IntMap[T]) -> Int {
+  match self {
+    Empty => 0
+    Leaf(..) => 1
+    Branch(..) as br_node => br_node.left.size() + br_node.right.size()
+  }
+}
+
+///|
 fn UInt::to_hex_str(self : UInt) -> String {
   let mut n = self
   let table = [

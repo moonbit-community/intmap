@@ -1,6 +1,10 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "myfreess/intmap"
 
+import(
+  "moonbitlang/core/hashmap"
+)
+
 // Values
 fn[T] merge(combine~ : (T, T) -> T, IntMap[T], IntMap[T]) -> IntMap[T]
 
@@ -8,10 +12,18 @@ fn[T] merge(combine~ : (T, T) -> T, IntMap[T], IntMap[T]) -> IntMap[T]
 
 // Types and methods
 type IntMap[T]
-fn[T] IntMap::from_array(Array[T]) -> Self[T]
+fn[T] IntMap::empty() -> Self[T]
+fn[T] IntMap::from_hashmap(@hashmap.HashMap[Int, T]) -> Self[T]
+fn[T] IntMap::from_map(Map[Int, T]) -> Self[T]
 fn[T] IntMap::get(Self[T], Int) -> T?
 fn[T] IntMap::insert(Self[T], Int, T) -> Self[T]
+fn[T] IntMap::is_empty(Self[T]) -> Bool
+fn[T] IntMap::iter(Self[T]) -> Iter[T]
+fn[T] IntMap::iter2(Self[T]) -> Iter2[Int, T]
 fn[T] IntMap::op_get(Self[T], Int) -> T
+fn[T] IntMap::size(Self[T]) -> Int
+fn[T] IntMap::to_hashmap(Self[T]) -> @hashmap.HashMap[Int, T]
+fn[T] IntMap::to_map(Self[T]) -> Map[Int, T]
 impl[T : Show] Show for IntMap[T]
 
 // Type aliases
