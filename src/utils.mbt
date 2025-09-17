@@ -199,3 +199,8 @@ pub fn[T] IntMap::filter(self : IntMap[T], p : (T) -> Bool) -> IntMap[T] {
 pub fn[T] IntMap::union(self : IntMap[T], other : IntMap[T]) -> IntMap[T] {
   IntMap::union_with(combine=(left, _) => left, self, other)
 }
+
+///|
+pub impl[T] Add for IntMap[T] with add(self, other) {
+  self.union(other)
+}
