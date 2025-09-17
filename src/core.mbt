@@ -4,7 +4,12 @@
 typealias Int as Key
 
 ///|
-typealias Int as Prefix
+fn Key::as_prefix(self : Key) -> Prefix {
+  self.reinterpret_as_uint()
+}
+
+///|
+typealias UInt as Prefix
 
 ///|
 typealias UInt as Mask // Mask must be 2 ^ n
@@ -92,37 +97,24 @@ test "unsigned int to hex string" {
 }
 
 ///|
-fn zero(k : Key, m : Mask) -> Bool {
-  let k = k.reinterpret_as_uint()
-  (k & m) == 0
+fn zero(key : UInt, mask : Mask) -> Bool {
+  (key & mask) == 0
 }
 
 ///|
-fn get_prefix_(k : UInt, m : UInt) -> Prefix {
-  k.lor(m - 1).land(m.lnot()).reinterpret_as_int()
+fn get_prefix(key : UInt, mask : UInt) -> Prefix {
+  (key | (mask - 1)) & mask.lnot()
 }
 
 ///|
-fn get_prefix(k : Key, m : Mask) -> Prefix {
-  get_prefix_(k.reinterpret_as_uint(), m)
-}
-
-///|
-fn match_prefix(key~ : Key, prefix~ : Prefix, mask~ : Mask) -> Bool {
+fn match_prefix(key~ : UInt, prefix~ : Prefix, mask~ : Mask) -> Bool {
   get_prefix(key, mask) == prefix
 }
 
 ///|
-fn gen_mask_(p1 : UInt, p2 : UInt) -> Mask {
+fn gen_mask(p1 : Prefix, p2 : Prefix) -> Mask {
   let unsigned_int_width = 32
   1U << (unsigned_int_width - 1 - p1.lxor(p2).clz())
-}
-
-///|
-fn gen_mask(p1 : Prefix, p2 : Prefix) -> Mask {
-  let p1 = p1.reinterpret_as_uint()
-  let p2 = p2.reinterpret_as_uint()
-  gen_mask_(p1, p2)
 }
 
 ///|
@@ -153,11 +145,15 @@ pub fn[T] IntMap::insert_with(
       if leaf.key == key {
         Leaf(key~, value=combine(value, leaf.value))
       } else {
-        join(key, Leaf(key~, value~), leaf.key, leaf)
+        join(key.as_prefix(), Leaf(key~, value~), leaf.key.as_prefix(), leaf)
       }
     Branch(..) as br_node =>
-      if match_prefix(key~, prefix=br_node.prefix, mask=br_node.mask) {
-        if zero(key, br_node.mask) {
+      if match_prefix(
+          key=key.reinterpret_as_uint(),
+          prefix=br_node.prefix,
+          mask=br_node.mask,
+        ) {
+        if zero(key.as_prefix(), br_node.mask) {
           Branch(
             prefix=br_node.prefix,
             mask=br_node.mask,
@@ -173,7 +169,7 @@ pub fn[T] IntMap::insert_with(
           )
         }
       } else {
-        join(key, Leaf(key~, value~), br_node.prefix, br_node)
+        join(key.as_prefix(), Leaf(key~, value~), br_node.prefix, br_node)
       }
   }
 }
@@ -196,7 +192,7 @@ pub fn[T] IntMap::remove(self : IntMap[T], key : Key) -> IntMap[T] {
           (false, tree)
         }
       Branch(prefix~, mask~, left~, right~) =>
-        if key.reinterpret_as_uint() <= prefix.reinterpret_as_uint() {
+        if key.reinterpret_as_uint() <= prefix {
           // select left subtree
           let (changed, left) = go(left)
           if changed {
@@ -236,7 +232,7 @@ pub fn[T] IntMap::get(self : IntMap[T], k : Key) -> T? {
     Empty => None
     Leaf(..) as leaf => if leaf.key == k { Some(leaf.value) } else { None }
     Branch(..) as br_node =>
-      if k.reinterpret_as_uint() <= br_node.prefix.reinterpret_as_uint() {
+      if k.reinterpret_as_uint() <= br_node.prefix {
         br_node.left.get(k)
       } else {
         br_node.right.get(k)
