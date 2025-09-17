@@ -204,3 +204,12 @@ pub fn[T] IntMap::union(self : IntMap[T], other : IntMap[T]) -> IntMap[T] {
 pub impl[T] Add for IntMap[T] with add(self, other) {
   self.union(other)
 }
+
+///|
+pub fn[T] IntMap::intersection_with(
+  combine~ : (T, T) -> T,
+  left : IntMap[T],
+  right : IntMap[T],
+) -> IntMap[T] {
+  ...
+}
