@@ -14,6 +14,8 @@ type IntMap[T]
 fn[T] IntMap::empty() -> Self[T]
 fn[T] IntMap::filter(Self[T], (T) -> Bool) -> Self[T]
 fn[T] IntMap::from_hashmap(@hashmap.HashMap[Int, T]) -> Self[T]
+fn[T] IntMap::from_iter(Iter[(Int, T)]) -> Self[T]
+fn[T] IntMap::from_iter2(Iter2[Int, T]) -> Self[T]
 fn[T] IntMap::from_map(Map[Int, T]) -> Self[T]
 fn[T] IntMap::get(Self[T], Int) -> T?
 fn[T] IntMap::insert(Self[T], Int, T) -> Self[T]

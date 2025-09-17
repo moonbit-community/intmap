@@ -19,6 +19,26 @@ pub fn[T] IntMap::from_hashmap(hmap : @hashmap.HashMap[Int, T]) -> IntMap[T] {
 }
 
 ///|
+pub fn[T] IntMap::from_iter(iter : Iter[(Int, T)]) -> IntMap[T] {
+  let mut intmap = IntMap::empty()
+  for pair in iter {
+    intmap = intmap.insert(pair.0, pair.1)
+  } else {
+    return intmap
+  }
+}
+
+///|
+pub fn[T] IntMap::from_iter2(iter2 : Iter2[Int, T]) -> IntMap[T] {
+  let mut intmap = IntMap::empty()
+  for k, v in iter2 {
+    intmap = intmap.insert(k, v)
+  } else {
+    return intmap
+  }
+}
+
+///|
 pub fn[T] IntMap::to_map(self : IntMap[T]) -> Map[Int, T] {
   let map = {}
   for k, v in self.iter2() {
