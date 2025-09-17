@@ -39,13 +39,13 @@ pub fn[T] IntMap::to_hashmap(self : IntMap[T]) -> @hashmap.HashMap[Int, T] {
 }
 
 ///|
-pub fn[T] IntMap::iter(self : IntMap[T]) -> Iter[T] {
+pub fn[T] IntMap::iter(self : IntMap[T]) -> Iter[(Int, T)] {
   Iter::new(fn(yield_) {
     fn go(node : IntMap[T]) {
       match node {
         IntMap::Empty => IterContinue
-        IntMap::Leaf(value~, ..) =>
-          if yield_(value) is IterEnd {
+        IntMap::Leaf(key~, value~) =>
+          if yield_((key, value)) is IterEnd {
             IterEnd
           } else {
             IterContinue
@@ -86,4 +86,17 @@ pub fn[T] IntMap::iter2(self : IntMap[T]) -> Iter2[Int, T] {
 
     go(self)
   })
+}
+
+///|
+pub fn[X, Y] IntMap::map(
+  self : IntMap[X],
+  f : (X) -> Y raise?,
+) -> IntMap[Y] raise? {
+  match self {
+    Empty => Empty
+    Leaf(key~, value~) => Leaf(key~, value=f(value))
+    Branch(prefix~, mask~, left~, right~) =>
+      Branch(prefix~, mask~, left=left.map(f), right=right.map(f))
+  }
 }
