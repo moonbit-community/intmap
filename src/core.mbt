@@ -170,6 +170,10 @@ pub fn[T] IntMap::insert(self : IntMap[T], key : Key, value : T) -> IntMap[T] {
   self.insert_with(combine=(left, _) => left, key, value)
 }
 
+pub fn[T] IntMap::remove(self : IntMap[T], key : Key) -> IntMap[T] {
+  ...
+}
+
 ///|
 pub fn[T] IntMap::get(self : IntMap[T], k : Key) -> T? {
   match self {
@@ -268,4 +272,13 @@ pub fn[T] IntMap::union_with(
   }
 
   go(left, right)
+}
+
+///|
+pub fn[T] IntMap::intersection_with(
+  combine~ : (T, T) -> T,
+  left : IntMap[T],
+  right : IntMap[T],
+) -> IntMap[T] {
+  ...
 }
