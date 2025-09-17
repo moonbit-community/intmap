@@ -225,7 +225,7 @@ pub fn[T] IntMap::union_with(
   left : IntMap[T],
   right : IntMap[T],
 ) -> IntMap[T] {
-  fn merge(left : IntMap[T], right : IntMap[T]) -> IntMap[T] {
+  fn go(left : IntMap[T], right : IntMap[T]) -> IntMap[T] {
     match (left, right) {
       (t, Empty) => t
       (Empty, t) => t
@@ -240,20 +240,20 @@ pub fn[T] IntMap::union_with(
       ) =>
         if m == n && p == q {
           // The trees have the same prefix. Merge the subtrees
-          Branch(prefix=p, mask=m, left=merge(s0, t0), right=merge(s1, t1))
+          Branch(prefix=p, mask=m, left=go(s0, t0), right=go(s1, t1))
         } else if m < n && match_prefix(key=q, prefix=p, mask=m) {
           // q contains p. Merge t with a subtree of s
           if zero(q, m) {
-            Branch(prefix=p, mask=m, left=merge(s0, t), right=s1)
+            Branch(prefix=p, mask=m, left=go(s0, t), right=s1)
           } else {
-            Branch(prefix=p, mask=m, left=merge(s0, t), right=s1)
+            Branch(prefix=p, mask=m, left=s0, right=go(s1, t))
           }
         } else if m > n {
           // p contains q. Merge s with a subtree of t
           if zero(p, n) {
-            Branch(prefix=q, mask=n, left=merge(s, t0), right=t1)
+            Branch(prefix=q, mask=n, left=go(s, t0), right=t1)
           } else {
-            Branch(prefix=q, mask=n, left=t0, right=merge(s, t1))
+            Branch(prefix=q, mask=n, left=t0, right=go(s, t1))
           }
         } else {
           // The prefixes disagree
@@ -262,5 +262,5 @@ pub fn[T] IntMap::union_with(
     }
   }
 
-  merge(left, right)
+  go(left, right)
 }
