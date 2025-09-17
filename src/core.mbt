@@ -235,25 +235,30 @@ pub fn[T] IntMap::union_with(
         t.insert_with(combine~, key, value)
       }
       (
-        Branch(prefix=p, mask=m, left=s0, right=s1) as s,
-        Branch(prefix=q, mask=n, left=t0, right=t1) as t,
+        Branch(prefix=p, mask=m, left=s_left, right=s_right) as s,
+        Branch(prefix=q, mask=n, left=t_left, right=t_right) as t,
       ) =>
         if m == n && p == q {
           // The trees have the same prefix. Merge the subtrees
-          Branch(prefix=p, mask=m, left=go(s0, t0), right=go(s1, t1))
+          Branch(
+            prefix=p,
+            mask=m,
+            left=go(s_left, t_left),
+            right=go(s_right, t_right),
+          )
         } else if m < n && match_prefix(key=q, prefix=p, mask=m) {
           // q contains p. Merge t with a subtree of s
           if zero(q, m) {
-            Branch(prefix=p, mask=m, left=go(s0, t), right=s1)
+            Branch(prefix=p, mask=m, left=go(s_left, t), right=s_right)
           } else {
-            Branch(prefix=p, mask=m, left=s0, right=go(s1, t))
+            Branch(prefix=p, mask=m, left=s_left, right=go(s_right, t))
           }
         } else if m > n {
           // p contains q. Merge s with a subtree of t
           if zero(p, n) {
-            Branch(prefix=q, mask=n, left=go(s, t0), right=t1)
+            Branch(prefix=q, mask=n, left=go(s, t_left), right=t_right)
           } else {
-            Branch(prefix=q, mask=n, left=t0, right=go(s, t1))
+            Branch(prefix=q, mask=n, left=t_left, right=go(s, t_right))
           }
         } else {
           // The prefixes disagree
