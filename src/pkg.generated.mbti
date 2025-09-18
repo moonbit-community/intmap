@@ -36,7 +36,7 @@ fn[T] IntMap::to_map(Self[T]) -> Map[Int, T]
 fn[T] IntMap::union(Self[T], Self[T]) -> Self[T]
 fn[T] IntMap::union_with(combine~ : (T, T) -> T, Self[T], Self[T]) -> Self[T]
 fn[T] IntMap::values(Self[T]) -> Iter[T]
-impl[T] Add for IntMap[T]
+impl[T : Add] Add for IntMap[T]
 impl[T : Show] Show for IntMap[T]
 
 // Type aliases

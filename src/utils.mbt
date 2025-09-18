@@ -201,8 +201,8 @@ pub fn[T] IntMap::union(self : IntMap[T], other : IntMap[T]) -> IntMap[T] {
 }
 
 ///|
-pub impl[T] Add for IntMap[T] with add(self, other) {
-  self.union(other)
+pub impl[T : Add] Add for IntMap[T] with add(self, other) {
+  IntMap::union_with(combine=(left, right) => left + right, self, other)
 }
 
 ///|
