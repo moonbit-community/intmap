@@ -102,13 +102,13 @@ fn zero(key : UInt, mask~ : Mask) -> Bool {
 }
 
 ///|
-fn get_prefix(key : UInt, mask : UInt) -> Prefix {
+fn get_prefix(key : UInt, mask~ : UInt) -> Prefix {
   (key | (mask - 1)) & mask.lnot()
 }
 
 ///|
 fn match_prefix(key~ : UInt, prefix~ : Prefix, mask~ : Mask) -> Bool {
-  get_prefix(key, mask) == prefix
+  get_prefix(key, mask~) == prefix
 }
 
 ///|
@@ -126,9 +126,9 @@ fn[T] join(
 ) -> IntMap[T] {
   let mask = gen_mask(p1, p2)
   if zero(p1, mask~) {
-    Branch(prefix=get_prefix(p1, mask), mask~, left=t1, right=t2)
+    Branch(prefix=get_prefix(p1, mask~), mask~, left=t1, right=t2)
   } else {
-    Branch(prefix=get_prefix(p1, mask), mask~, left=t2, right=t1)
+    Branch(prefix=get_prefix(p1, mask~), mask~, left=t2, right=t1)
   }
 }
 

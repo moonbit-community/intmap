@@ -83,13 +83,13 @@ fn[T] PatriciaTree::lookup(self : PatriciaTree[T], key : Int) -> T? {
 }
 
 ///|
-fn get_prefix(key : UInt, mask : UInt) -> UInt {
+fn get_prefix(key : UInt, mask~ : UInt) -> UInt {
   key & (mask - 1U)
 }
 
 ///|
 fn match_prefix(key~ : UInt, prefix~ : UInt, mask~ : UInt) -> Bool {
-  get_prefix(key, mask) == prefix
+  get_prefix(key, mask~) == prefix
 }
 
 ///|
@@ -126,11 +126,11 @@ fn[T] join(
   p1 : UInt,
   t1 : PatriciaTree[T],
 ) -> PatriciaTree[T] {
-  let m = gen_mask(p0, p1)
-  if zero(p0, mask=m) {
-    PatriciaTree::Branch(prefix=get_prefix(p0, m), mask=m, left=t0, right=t1)
+  let mask = gen_mask(p0, p1)
+  if zero(p0, mask~) {
+    PatriciaTree::Branch(prefix=get_prefix(p0, mask~), mask~, left=t0, right=t1)
   } else {
-    PatriciaTree::Branch(prefix=get_prefix(p0, m), mask=m, left=t1, right=t0)
+    PatriciaTree::Branch(prefix=get_prefix(p0, mask~), mask~, left=t1, right=t0)
   }
 }
 
