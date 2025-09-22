@@ -97,7 +97,7 @@ test "unsigned int to hex string" {
 }
 
 ///|
-fn zero(key : UInt, mask : Mask) -> Bool {
+fn zero(key : UInt, mask~ : Mask) -> Bool {
   (key & mask) == 0
 }
 
@@ -125,7 +125,7 @@ fn[T] join(
   t2 : IntMap[T],
 ) -> IntMap[T] {
   let mask = gen_mask(p1, p2)
-  if zero(p1, mask) {
+  if zero(p1, mask~) {
     Branch(prefix=get_prefix(p1, mask), mask~, left=t1, right=t2)
   } else {
     Branch(prefix=get_prefix(p1, mask), mask~, left=t2, right=t1)
@@ -153,7 +153,7 @@ pub fn[T] IntMap::insert_with(
           prefix=br_node.prefix,
           mask=br_node.mask,
         ) {
-        if zero(key.as_prefix(), br_node.mask) {
+        if zero(key.as_prefix(), mask=br_node.mask) {
           Branch(
             prefix=br_node.prefix,
             mask=br_node.mask,
@@ -304,14 +304,14 @@ pub fn[T] IntMap::union_with(
           )
         } else if m < n && match_prefix(key=q, prefix=p, mask=m) {
           // q contains p. Merge t with a subtree of s
-          if zero(q, m) {
+          if zero(q, mask=m) {
             Branch(prefix=p, mask=m, left=go(s_left, t), right=s_right)
           } else {
             Branch(prefix=p, mask=m, left=s_left, right=go(s_right, t))
           }
         } else if m > n {
           // p contains q. Merge s with a subtree of t
-          if zero(p, n) {
+          if zero(p, mask=n) {
             Branch(prefix=q, mask=n, left=go(s, t_left), right=t_right)
           } else {
             Branch(prefix=q, mask=n, left=t_left, right=go(s, t_right))
@@ -360,14 +360,14 @@ pub fn[T] IntMap::intersection_with(
           )
         } else if m < n && match_prefix(key=q, prefix=p, mask=m) {
           // q contains p. Merge t with a subtree of s
-          if zero(q, m) {
+          if zero(q, mask=m) {
             go(s_left, t)
           } else {
             go(s_right, t)
           }
         } else if m > n {
           // p contains q. Merge s with a subtree of t
-          if zero(p, n) {
+          if zero(p, mask=n) {
             go(s, t_left)
           } else {
             go(s, t_right)

@@ -9,6 +9,7 @@ IntMap是一种为整数特化的不可变键值对容器，
 二叉字典树是一种使用每个键的二进制表示决定其位置的二叉树，键的二进制表示是一长串有限的0和1，那么假如当前位是0，就向左子树递归，当前位为1则向右子树递归.
 
 ```mbt
+///|
 enum BinTrie[T] {
   Empty
   Leaf(T)
@@ -53,6 +54,7 @@ fn[T] BinTrie::br(left : BinTrie[T], right : BinTrie[T]) -> BinTrie[T] {
 压缩前缀树在二叉字典树的基础上保存了更多信息以加速查找,在每个分叉的地方，它都保留子树中所有键的*公共前缀*(虽然此处是从最低位开始计算，但我们仍然使用前缀这种说法)，并用一个无符号整数标记当前的分支位(branching bit).这样一来，查找时需要经过的分支数量大大减少。
 
 ```mbt
+///|
 enum PatriciaTree[T] {
   Empty
   Leaf(key~ : Int, value~ : T)
@@ -64,36 +66,35 @@ enum PatriciaTree[T] {
   )
 }
 
+///|
 fn[T] PatriciaTree::lookup(self : PatriciaTree[T], key : Int) -> T? {
-    match self {
-        Empty => None
-        Leaf(key=k, value~) => {
-            if k == key {
-                Some(value)
-            } else {
-                None
-            }
-        }
-        Branch(prefix~, mask~, left~, right~) => {
-            if !(match_prefix(key~, prefix~, mask~)) {
-                None
-            } else {
-                if zero_bit(key~, mask~) {
-                    left.lookup(key)
-                } else {
-                    right.lookup(key)
-                }
-            }
-        }
-    }
+  match self {
+    Empty => None
+    Leaf(key=k, value~) => if k == key { Some(value) } else { None }
+    Branch(prefix~, mask~, left~, right~) =>
+      if !match_prefix(key=key.reinterpret_as_uint(), prefix~, mask~) {
+        None
+      } else if zero(key.reinterpret_as_uint(), mask~) {
+        left.lookup(key)
+      } else {
+        right.lookup(key)
+      }
+  }
 }
 
-fn match_prefix(key~ : Int, prefix~ : UInt, mask~ : UInt) -> Bool {
-    (key.reinterpret_as_uint() & (mask - 1U)) == prefix
+///|
+fn get_prefix(key : UInt, mask : UInt) -> UInt {
+  key & (mask - 1U)
 }
 
-fn zero_bit(key~ : Int, mask~ : UInt) -> Bool {
-    (key.reinterpret_as_uint() & mask) == 0
+///|
+fn match_prefix(key~ : UInt, prefix~ : UInt, mask~ : UInt) -> Bool {
+  get_prefix(key, mask) == prefix
+}
+
+///|
+fn zero(k : UInt, mask~ : UInt) -> Bool {
+  (k & mask) == 0
 }
 ```
 
@@ -118,12 +119,118 @@ fn[T] PatriciaTree::branch(
 ## 插入与合并
 
 ```mbt
-fn branching_bit(p0 : UInt, p1 : UInt) -> UInt {
+///|
+fn[T] join(
+  p0 : UInt,
+  t0 : PatriciaTree[T],
+  p1 : UInt,
+  t1 : PatriciaTree[T],
+) -> PatriciaTree[T] {
+  let m = gen_mask(p0, p1)
+  if zero(p0, mask=m) {
+    PatriciaTree::Branch(prefix=get_prefix(p0, m), mask=m, left=t0, right=t1)
+  } else {
+    PatriciaTree::Branch(prefix=get_prefix(p0, m), mask=m, left=t1, right=t0)
+  }
+}
+
+///|
+fn gen_mask(p0 : UInt, p1 : UInt) -> UInt {
   fn lowest_bit(x : UInt) -> UInt {
     x & x.lnot()
   }
-  lowest_bit(p0.lxor(p1))
+
+  lowest_bit(p0 ^ p1)
+}
+```
+
+```mbt
+///|
+fn[T] PatriciaTree::insert_with(
+  self : PatriciaTree[T],
+  k : Int,
+  v : T,
+  combine~ : (T, T) -> T,
+) -> PatriciaTree[T] {
+  fn go(tree : PatriciaTree[T]) -> PatriciaTree[T] {
+    match tree {
+      Empty => Leaf(key=k, value=v)
+      Leaf(key~, value~) as tree =>
+        if key == k {
+          PatriciaTree::Leaf(key~, value=combine(v, value))
+        } else {
+          join(
+            k.reinterpret_as_uint(),
+            Leaf(key=k, value=v),
+            key.reinterpret_as_uint(),
+            tree,
+          )
+        }
+      Branch(prefix~, mask~, left~, right~) as tree =>
+        if match_prefix(key=k.reinterpret_as_uint(), prefix~, mask~) {
+          if zero(k.reinterpret_as_uint(), mask~) {
+            PatriciaTree::Branch(prefix~, mask~, left=go(left), right~)
+          } else {
+            PatriciaTree::Branch(prefix~, mask~, left~, right=go(right))
+          }
+        } else {
+          join(k.reinterpret_as_uint(), Leaf(key=k, value=v), prefix, tree)
+        }
+    }
+  }
+
+  go(self)
+}
+```
+
+```mbt
+///|
+fn[T] PatriciaTree::merge_with(
+  combine~ : (T, T) -> T,
+  left : PatriciaTree[T],
+  right : PatriciaTree[T],
+) -> PatriciaTree[T] {
+  fn go(left : PatriciaTree[T], right : PatriciaTree[T]) -> PatriciaTree[T] {
+    match (left, right) {
+      (Empty, t) | (t, Empty) => t
+      (Leaf(key~, value~), t) => t.insert_with(key, value, combine~)
+      (t, Leaf(key~, value~)) =>
+        t.insert_with(key, value, combine=fn(x, y) { combine(y, x) })
+      (
+        Branch(prefix=p, mask=m, left=s0, right=s1) as s,
+        Branch(prefix=q, mask=n, left=t0, right=t1) as t,
+      ) =>
+        if m == n && p == q {
+          // The trees have the same prefix. Merge the subtrees
+          PatriciaTree::Branch(
+            prefix=p,
+            mask=m,
+            left=go(s0, t0),
+            right=go(s1, t1),
+          )
+        } else if m < n && match_prefix(key=q, prefix=p, mask=m) {
+          // q contains p. Merge t with a subtree of s
+          if zero(q, mask=m) {
+            Branch(prefix=p, mask=m, left=go(s0, t), right=s1)
+          } else {
+            Branch(prefix=p, mask=m, left=s0, right=go(s1, t))
+          }
+        } else if m > n && match_prefix(key=p, prefix=q, mask=n) {
+          // p contains q. Merge s with a subtree of t.
+          if zero(p, mask=n) {
+            Branch(prefix=q, mask=n, left=go(s, t0), right=t1)
+          } else {
+            Branch(prefix=q, mask=n, left=t0, right=go(s, t1))
+          }
+        } else {
+          join(p, s, q, t)
+        }
+    }
+  }
+
+  go(left, right)
 }
 ```
 
 ## 大端压缩前缀树
+
