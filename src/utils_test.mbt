@@ -56,4 +56,15 @@ test "IntMap::union() && IntMap::intersection()" {
   @json.inspect(lhs.intersection(rhs).iter().collect(), content=[
     [3, "three at left hand side"],
   ])
+  let lhs = @intmap.IntMap::empty()
+    .insert(0, "zero")
+    .insert(@int.min_value, "@int.min_value")
+  let rhs = @intmap.IntMap::empty()
+    .insert(1, "negative one")
+    .insert(@int.min_value, "@int.min_value")
+  @json.inspect(lhs.union(rhs).iter().collect(), content=[
+    [0, "zero"],
+    [1, "negative one"],
+    [-2147483648, "@int.min_value"],
+  ])
 }
