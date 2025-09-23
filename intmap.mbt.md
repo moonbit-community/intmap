@@ -246,4 +246,4 @@ fn[T] PatriciaTree::merge_with(
 
 ## OCaml库ptmap中的一处错误
 
-虽然IntMap的实现相当简洁明了，但在有些情况下还是可能犯一些非常隐蔽的错误，甚至原论文作者在编写IntMap的SML实现时也未能幸免，后来又被OCaml的ptmap库继承，直到
+虽然IntMap的实现思路相当简洁明了，但在编写具体的实现代码时还是可能犯一些非常隐蔽的错误，甚至原论文作者在编写IntMap的SML实现时也未能幸免，后来又被OCaml的Ptset/Ptmap模块继承，直到Jan Midtgaard在使用QuickCheck检查Ptset模块时这个问题才被发现。
