@@ -358,14 +358,14 @@ pub fn[T] IntMap::intersection_with(
             left=go(s_left, t_left),
             right=go(s_right, t_right),
           )
-        } else if m < n && match_prefix(key=q, prefix=p, mask=m) {
+        } else if m > n && match_prefix(key=q, prefix=p, mask=m) {
           // q contains p. Merge t with a subtree of s
           if zero(q, mask=m) {
             go(s_left, t)
           } else {
             go(s_right, t)
           }
-        } else if m > n {
+        } else if m < n && match_prefix(key=p, prefix=q, mask=n) {
           // p contains q. Merge s with a subtree of t
           if zero(p, mask=n) {
             go(s, t_left)
