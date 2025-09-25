@@ -68,3 +68,41 @@ test "IntMap::union() && IntMap::intersection()" {
     [-2147483648, "@int.min_value"],
   ])
 }
+
+///|
+test "more union test" {
+  let lhs = @intmap.IntMap::empty()
+    .insert(1, "one")
+    .insert(2, "two")
+    .insert(3, "three at left hand side")
+    .insert(0, "zero at left hand side")
+    .insert(-1, "negative one")
+    .insert(-2, "negative two")
+    .insert(-4, "negative four")
+    .insert(-42, "negative forty two at left hand side")
+    .insert(@int.min_value, "@int.min_value")
+    .insert(@int.max_value, "@int.max_value at left hand side")
+  let rhs = @intmap.IntMap::empty()
+    .insert(3, "three at right hand side")
+    .insert(4, "four")
+    .insert(5, "five")
+    .insert(0, "zero at right hand side")
+    .insert(42, "forty two")
+    .insert(-42, "negative forty two at right hand side")
+    .insert(@int.max_value, "@int.max_value at right hand side")
+  @json.inspect(lhs.union(rhs).iter().collect(), content=[
+    [0, "zero at left hand side"],
+    [1, "one"],
+    [2, "two"],
+    [3, "three at left hand side"],
+    [4, "four"],
+    [5, "five"],
+    [42, "forty two"],
+    [2147483647, "@int.max_value at left hand side"],
+    [-2147483648, "@int.min_value"],
+    [-42, "negative forty two at left hand side"],
+    [-4, "negative four"],
+    [-2, "negative two"],
+    [-1, "negative one"],
+  ])
+}

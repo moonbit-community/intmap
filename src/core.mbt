@@ -302,14 +302,14 @@ pub fn[T] IntMap::union_with(
             left=go(s_left, t_left),
             right=go(s_right, t_right),
           )
-        } else if m < n && match_prefix(key=q, prefix=p, mask=m) {
+        } else if m > n && match_prefix(key=q, prefix=p, mask=m) {
           // q contains p. Merge t with a subtree of s
           if zero(q, mask=m) {
             Branch(prefix=p, mask=m, left=go(s_left, t), right=s_right)
           } else {
             Branch(prefix=p, mask=m, left=s_left, right=go(s_right, t))
           }
-        } else if m > n {
+        } else if m < n && match_prefix(key=p, prefix=q, mask=n) {
           // p contains q. Merge s with a subtree of t
           if zero(p, mask=n) {
             Branch(prefix=q, mask=n, left=go(s, t_left), right=t_right)
