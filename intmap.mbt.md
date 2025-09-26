@@ -185,7 +185,7 @@ fn[T] PatriciaTree::insert_with(
 
 ```mbt
 ///|
-fn[T] PatriciaTree::merge_with(
+fn[T] PatriciaTree::union_with(
   combine~ : (T, T) -> T,
   left : PatriciaTree[T],
   right : PatriciaTree[T],
@@ -244,6 +244,8 @@ fn[T] PatriciaTree::merge_with(
 
 + 常见情况下合并速度更快。在实践中，一个intmap
 
-## OCaml库ptmap中的一处错误
+## 原实现中的一处错误
 
-虽然IntMap的实现思路相当简洁明了，但在编写具体的实现代码时还是可能犯一些非常隐蔽的错误，甚至原论文作者在编写IntMap的SML实现时也未能幸免，后来又被OCaml的Ptset/Ptmap模块继承，直到Jan Midtgaard在使用QuickCheck检查Ptset模块时这个问题才被发现。
+虽然IntMap的实现思路相当简洁明了，但在编写具体的实现代码时还是可能犯一些非常隐蔽的错误，甚至原论文作者在编写IntMap的SML实现时也未能幸免，后来又被OCaml的Ptset/Ptmap模块继承，直到2018年发表的*QuickChecking Patricia Trees*一文中这个问题才被发现。
+
+具体来说，由于SML和OCaml语言没有提供无符号整数类型，在这两种语言的实现中`IntMap`类型里的掩码都通过int存储，但在`union_with`函数中对掩码进行比较时，他们都忘记了应该使用无符号整数的比较。
