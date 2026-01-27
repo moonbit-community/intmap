@@ -22,6 +22,7 @@ enum BinTrie[T] {
 > 此处读取二进制位的顺序是从整数最小位到最高位
 
 ```mbt
+///|
 fn[T] BinTrie::lookup(self : BinTrie[T], key : UInt) -> T? {
   match self {
     Empty => None
@@ -39,6 +40,7 @@ fn[T] BinTrie::lookup(self : BinTrie[T], key : UInt) -> T? {
 为了避免创建过多空树，我们不直接调用值构造子，而是使用branch方法
 
 ```mbt
+///|
 fn[T] BinTrie::br(left : BinTrie[T], right : BinTrie[T]) -> BinTrie[T] {
   match (left, right) {
     (Empty, Empty) => Empty
@@ -167,7 +169,7 @@ fn[T] join(
 ///|
 fn gen_mask(p0 : UInt, p1 : UInt) -> UInt {
   fn lowest_bit(x : UInt) -> UInt {
-    x & (x.reinterpret_as_int().neg().reinterpret_as_uint())
+    x & x.reinterpret_as_int().neg().reinterpret_as_uint()
   }
 
   lowest_bit(p0 ^ p1)

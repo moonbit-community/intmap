@@ -1,9 +1,9 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "myfreess/intmap"
 
-import(
-  "moonbitlang/core/hashmap"
-)
+import {
+  "moonbitlang/core/hashmap",
+}
 
 // Values
 
@@ -11,38 +11,33 @@ import(
 
 // Types and methods
 type IntMap[T]
-fn[T : Add] IntMap::add(Self[T], Self[T]) -> Self[T] // from trait `Add`
-fn[T] IntMap::each(Self[T], (Int, T) -> Unit raise?) -> Unit raise?
-fn[T] IntMap::empty() -> Self[T]
-fn[T] IntMap::filter(Self[T], (T) -> Bool) -> Self[T]
-fn[T] IntMap::from_hashmap(@hashmap.HashMap[Int, T]) -> Self[T]
-fn[T] IntMap::from_iter(Iter[(Int, T)]) -> Self[T]
-fn[T] IntMap::from_iter2(Iter2[Int, T]) -> Self[T]
-fn[T] IntMap::from_map(Map[Int, T]) -> Self[T]
-fn[T] IntMap::get(Self[T], Int) -> T?
-fn[T] IntMap::insert(Self[T], Int, T) -> Self[T]
-fn[T] IntMap::insert_with(Self[T], combine~ : (T, T) -> T, Int, T) -> Self[T]
-fn[T] IntMap::intersection(Self[T], Self[T]) -> Self[T]
-fn[T] IntMap::intersection_with(combine~ : (T, T) -> T, Self[T], Self[T]) -> Self[T]
-fn[T] IntMap::is_empty(Self[T]) -> Bool
-fn[T] IntMap::iter(Self[T]) -> Iter[(Int, T)]
-fn[T] IntMap::iter2(Self[T]) -> Iter2[Int, T]
-fn[T] IntMap::keys(Self[T]) -> Iter[Int]
-fn[X, Y] IntMap::map(Self[X], (X) -> Y raise?) -> Self[Y] raise?
-#deprecated
-fn[T : Add] IntMap::op_add(Self[T], Self[T]) -> Self[T] // from trait `Add`
-fn[T] IntMap::op_get(Self[T], Int) -> T
-fn[T : Show] IntMap::output(Self[T], &Logger) -> Unit // from trait `Show`
-fn[T] IntMap::remove(Self[T], Int) -> Self[T]
-fn[T] IntMap::size(Self[T]) -> Int
-fn[T] IntMap::to_hashmap(Self[T]) -> @hashmap.HashMap[Int, T]
-fn[T] IntMap::to_map(Self[T]) -> Map[Int, T]
-fn[T : Show] IntMap::to_string(Self[T]) -> String // from trait `Show`
-fn[T] IntMap::union(Self[T], Self[T]) -> Self[T]
-fn[T] IntMap::union_with(combine~ : (T, T) -> T, Self[T], Self[T]) -> Self[T]
-fn[T] IntMap::values(Self[T]) -> Iter[T]
-impl[T : Add] Add for IntMap[T]
-impl[T : Show] Show for IntMap[T]
+pub fn[T] IntMap::each(Self[T], (Int, T) -> Unit raise?) -> Unit raise?
+pub fn[T] IntMap::empty() -> Self[T]
+pub fn[T] IntMap::filter(Self[T], (T) -> Bool) -> Self[T]
+pub fn[T] IntMap::from_hashmap(@hashmap.HashMap[Int, T]) -> Self[T]
+pub fn[T] IntMap::from_iter(Iter[(Int, T)]) -> Self[T]
+pub fn[T] IntMap::from_iter2(Iter2[Int, T]) -> Self[T]
+pub fn[T] IntMap::from_map(Map[Int, T]) -> Self[T]
+pub fn[T] IntMap::get(Self[T], Int) -> T?
+pub fn[T] IntMap::insert(Self[T], Int, T) -> Self[T]
+pub fn[T] IntMap::insert_with(Self[T], combine~ : (T, T) -> T, Int, T) -> Self[T]
+pub fn[T] IntMap::intersection(Self[T], Self[T]) -> Self[T]
+pub fn[T] IntMap::intersection_with(combine~ : (T, T) -> T, Self[T], Self[T]) -> Self[T]
+pub fn[T] IntMap::is_empty(Self[T]) -> Bool
+pub fn[T] IntMap::iter(Self[T]) -> Iter[(Int, T)]
+pub fn[T] IntMap::iter2(Self[T]) -> Iter2[Int, T]
+pub fn[T] IntMap::keys(Self[T]) -> Iter[Int]
+pub fn[X, Y] IntMap::map(Self[X], (X) -> Y raise?) -> Self[Y] raise?
+pub fn[T] IntMap::op_get(Self[T], Int) -> T
+pub fn[T] IntMap::remove(Self[T], Int) -> Self[T]
+pub fn[T] IntMap::size(Self[T]) -> Int
+pub fn[T] IntMap::to_hashmap(Self[T]) -> @hashmap.HashMap[Int, T]
+pub fn[T] IntMap::to_map(Self[T]) -> Map[Int, T]
+pub fn[T] IntMap::union(Self[T], Self[T]) -> Self[T]
+pub fn[T] IntMap::union_with(combine~ : (T, T) -> T, Self[T], Self[T]) -> Self[T]
+pub fn[T] IntMap::values(Self[T]) -> Iter[T]
+pub impl[T : Add] Add for IntMap[T]
+pub impl[T : Show] Show for IntMap[T]
 
 // Type aliases
 

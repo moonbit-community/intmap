@@ -1,5 +1,11 @@
 {
   "import": [
-    { "path": "moonbitlang/quickcheck", "alias": "qcheck" }
+    { "path": "moonbitlang/quickcheck", "alias": "qcheck" },
+    "moonbitlang/core/hashmap",
+    "moonbitlang/core/int",
+    "moonbitlang/core/buffer"
+  ],
+  "test-import": [
+    "moonbitlang/core/int"
   ]
 }

@@ -1,7 +1,7 @@
 // Big-endian Patricia Tree
 
 ///|
-typealias Int as Key
+type Key = Int
 
 ///|
 fn Key::as_prefix(self : Key) -> Prefix {
@@ -9,10 +9,10 @@ fn Key::as_prefix(self : Key) -> Prefix {
 }
 
 ///|
-typealias UInt as Prefix
+type Prefix = UInt
 
 ///|
-typealias UInt as Mask // Mask must be 2 ^ n
+type Mask = UInt // Mask must be 2 ^ n
 
 ///|
 enum IntMap[T] {
