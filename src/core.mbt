@@ -15,6 +15,10 @@ type Prefix = UInt
 type Mask = UInt // Mask must be 2 ^ n
 
 ///|
+/// A canonical big-endian Patricia tree:
+/// - `prefix` stores the common high bits shared by every key below a branch.
+/// - `mask` marks the highest bit where the two child subtrees differ.
+/// - branch nodes never keep `Empty` children; use `IntMap::branch` to rebuild them.
 enum IntMap[T] {
   Empty
   Leaf(key~ : Key, value~ : T)
@@ -27,6 +31,9 @@ pub fn[T] IntMap::empty() -> IntMap[T] {
 }
 
 ///|
+/// Smart constructor used internally to preserve the canonical representation.
+/// Recursive operations can temporarily drop one side to `Empty`; when that
+/// happens we collapse the branch instead of storing redundant structure.
 fn[T] IntMap::branch(
   prefix~ : Prefix,
   mask~ : Mask,
@@ -34,8 +41,11 @@ fn[T] IntMap::branch(
   right~ : IntMap[T],
 ) -> IntMap[T] {
   match (left, right) {
+    // One subtree disappeared, so the surviving child already is the result.
     (Empty, t) => t
+    // Symmetric case of the above.
     (t, Empty) => t
+    // Only keep an explicit branch when both children are non-empty.
     (_, _) => IntMap::Branch(prefix~, mask~, left~, right~)
   }
 }
@@ -102,6 +112,8 @@ fn zero(key : UInt, mask~ : Mask) -> Bool {
 }
 
 ///|
+/// In a big-endian Patricia tree the branching bit is the highest differing bit.
+/// Clearing that bit and every lower bit leaves the shared prefix for the subtree.
 fn get_prefix(key : UInt, mask~ : UInt) -> Prefix {
   (key | (mask - 1)) & mask.lnot()
 }
@@ -112,12 +124,14 @@ fn match_prefix(key~ : UInt, prefix~ : Prefix, mask~ : Mask) -> Bool {
 }
 
 ///|
+/// Returns the highest differing bit between two prefixes.
 fn gen_mask(p1 : Prefix, p2 : Prefix) -> Mask {
   let unsigned_int_width = 32
   1U << (unsigned_int_width - 1 - p1.lxor(p2).clz())
 }
 
 ///|
+/// Create the smallest branch that can contain two trees with disjoint prefixes.
 fn[T] join(
   p1 : Prefix,
   t1 : IntMap[T],
@@ -126,13 +140,17 @@ fn[T] join(
 ) -> IntMap[T] {
   let mask = gen_mask(p1, p2)
   if zero(p1, mask~) {
+    // `p1` falls on the zero side of the branching bit, so it becomes the left child.
     Branch(prefix=get_prefix(p1, mask~), mask~, left=t1, right=t2)
   } else {
+    // `p1` falls on the one side, so the children must be swapped.
     Branch(prefix=get_prefix(p1, mask~), mask~, left=t2, right=t1)
   }
 }
 
 ///|
+/// Insert a key/value pair, combining with the existing value on collisions.
+/// `combine(new_value, old_value)` receives the inserted value first.
 pub fn[T] IntMap::insert_with(
   self : IntMap[T],
   combine~ : (T, T) -> T,
@@ -140,11 +158,14 @@ pub fn[T] IntMap::insert_with(
   value : T,
 ) -> IntMap[T] {
   match self {
+    // Inserting into an empty tree creates a singleton leaf.
     Empty => Leaf(key~, value~)
     Leaf(..) as leaf =>
       if leaf.key == key {
+        // Duplicate key: stay at the leaf and combine the two values.
         Leaf(key~, value=combine(value, leaf.value))
       } else {
+        // Different key: split this leaf into a new branch containing both leaves.
         join(key.as_prefix(), Leaf(key~, value~), leaf.key.as_prefix(), leaf)
       }
     Branch(..) as br_node =>
@@ -154,6 +175,7 @@ pub fn[T] IntMap::insert_with(
           mask=br_node.mask,
         ) {
         if zero(key.as_prefix(), mask=br_node.mask) {
+          // The key belongs to the left subtree; recurse only there.
           Branch(
             prefix=br_node.prefix,
             mask=br_node.mask,
@@ -161,6 +183,7 @@ pub fn[T] IntMap::insert_with(
             right=br_node.right,
           )
         } else {
+          // The key belongs to the right subtree; recurse only there.
           Branch(
             prefix=br_node.prefix,
             mask=br_node.mask,
@@ -169,45 +192,61 @@ pub fn[T] IntMap::insert_with(
           )
         }
       } else {
+        // The key does not belong under this branch prefix; join from above.
         join(key.as_prefix(), Leaf(key~, value~), br_node.prefix, br_node)
       }
   }
 }
 
 ///|
-/// insert a new kay-value pair or replace original value if this key existed
+/// Insert a key/value pair or replace the previous value for the same key.
 pub fn[T] IntMap::insert(self : IntMap[T], key : Key, value : T) -> IntMap[T] {
   self.insert_with(combine=(left, _) => left, key, value)
 }
 
 ///|
+/// Remove a key from the map and return the updated tree.
+/// When the key cannot exist below the current branch, we stop immediately and
+/// reuse the original subtree to preserve structural sharing.
 pub fn[T] IntMap::remove(self : IntMap[T], key : Key) -> IntMap[T] {
   fn go(tree : IntMap[T]) -> (Bool, IntMap[T]) {
     match tree {
+      // Nothing to remove.
       Empty => (false, tree)
       Leaf(..) as leaf =>
         if leaf.key == key {
+          // Exact hit: remove the leaf entirely.
           (true, Empty)
         } else {
+          // Different key: keep the original leaf for maximal sharing.
           (false, tree)
         }
       Branch(prefix~, mask~, left~, right~) =>
-        if key.reinterpret_as_uint() <= prefix {
+        // A branch prefix is only a compressed summary, not a concrete key.
+        // We must reject prefix mismatches before deciding which side to descend.
+        if !match_prefix(key=key.as_prefix(), prefix~, mask~) {
+          // The key cannot appear anywhere below this branch.
+          (false, tree)
+        } else if zero(key.as_prefix(), mask~) {
           // select left subtree
           let (changed, left) = go(left)
           if changed {
+            // The left subtree changed, so rebuild and canonicalize this branch.
             let tree = IntMap::branch(prefix~, mask~, left~, right~)
             (true, tree)
           } else {
+            // No change below; reuse the original node.
             (false, tree)
           }
         } else {
           // select right subtree
           let (changed, right) = go(right)
           if changed {
+            // The right subtree changed, so rebuild and canonicalize this branch.
             let tree = IntMap::branch(prefix~, mask~, left~, right~)
             (true, tree)
           } else {
+            // No change below; reuse the original node.
             (false, tree)
           }
         }
@@ -227,20 +266,39 @@ test "IntMap::remove() keeps physical equality when no change" {
 }
 
 ///|
+/// Look up a key. Branch selection is valid only after the compressed prefix
+/// has been checked with `match_prefix`.
 pub fn[T] IntMap::get(self : IntMap[T], k : Key) -> T? {
   match self {
+    // Empty subtree means the key is absent.
     Empty => None
-    Leaf(..) as leaf => if leaf.key == k { Some(leaf.value) } else { None }
+    Leaf(..) as leaf =>
+      if leaf.key == k {
+        // Leaves store one concrete key/value pair.
+        Some(leaf.value)
+      } else {
+        None
+      }
     Branch(..) as br_node =>
-      if k.reinterpret_as_uint() <= br_node.prefix {
+      if !match_prefix(
+          key=k.as_prefix(),
+          prefix=br_node.prefix,
+          mask=br_node.mask,
+        ) {
+        // The key falls outside this compressed prefix.
+        None
+      } else if zero(k.as_prefix(), mask=br_node.mask) {
+        // Matching prefix, zero branch bit: continue on the left.
         br_node.left.get(k)
       } else {
+        // Matching prefix, one branch bit: continue on the right.
         br_node.right.get(k)
       }
   }
 }
 
 ///|
+/// Indexing variant of `get`; aborts when the key is absent.
 pub fn[T] IntMap::op_get(self : IntMap[T], key : Key) -> T {
   match self.get(key) {
     None => abort("IntMap::op_get: invalid key \{key}")
@@ -275,7 +333,52 @@ test "edge case" {
 }
 
 ///|
-/// 
+test "IntMap::get() and IntMap::remove() reject prefix mismatch" {
+  let bogus : IntMap[String] = Branch(
+    prefix=0U,
+    mask=2U,
+    left=Leaf(key=0, value="zero"),
+    right=Leaf(key=1, value="one"),
+  )
+  assert_eq(bogus.get(0), None)
+  assert_eq(bogus.get(1), None)
+  assert_true(physical_equal(bogus.remove(0), bogus))
+  assert_true(physical_equal(bogus.remove(1), bogus))
+}
+
+///|
+test "IntMap::intersection() canonicalizes empty result" {
+  let lhs = IntMap::Empty.insert(-2, "lhs:-2").insert(0, "lhs:0")
+  let rhs = IntMap::Empty.insert(-1, "rhs:-1").insert(1, "rhs:1")
+  let inter = lhs.intersection(rhs)
+  assert_true(inter.is_empty())
+  assert_eq(inter.size(), 0)
+  match inter {
+    Empty => ()
+    _ => abort("expected canonical empty intersection")
+  }
+}
+
+///|
+test "IntMap::intersection() canonicalizes singleton result" {
+  let lhs = IntMap::Empty.insert(-2, "lhs:-2").insert(0, "lhs:0")
+  let rhs = IntMap::Empty.insert(-1, "rhs:-1").insert(0, "rhs:0")
+  let inter = lhs.intersection(rhs)
+  assert_false(inter.is_empty())
+  assert_eq(inter.size(), 1)
+  assert_eq(inter.get(0), Some("lhs:0"))
+  match inter {
+    Leaf(key~, value~) => {
+      assert_eq(key, 0)
+      assert_eq(value, "lhs:0")
+    }
+    _ => abort("expected canonical singleton intersection")
+  }
+}
+
+///|
+/// Merge two maps, combining values that share the same key.
+/// `combine(left, right)` receives the value from the left map first.
 pub fn[T] IntMap::union_with(
   combine~ : (T, T) -> T,
   left : IntMap[T],
@@ -283,10 +386,14 @@ pub fn[T] IntMap::union_with(
 ) -> IntMap[T] {
   fn go(left : IntMap[T], right : IntMap[T]) -> IntMap[T] {
     match (left, right) {
+      // Nothing to merge from the right.
       (t, Empty) => t
+      // Nothing to merge from the left.
       (Empty, t) => t
+      // Reduce the problem to inserting one left entry into the right tree.
       (Leaf(key~, value~), t) => t.insert_with(combine~, key, value)
       (t, Leaf(key~, value~)) => {
+        // Symmetric single-leaf case; flip the combiner to preserve left bias.
         let combine = fn(x, y) { combine(y, x) }
         t.insert_with(combine~, key, value)
       }
@@ -295,7 +402,8 @@ pub fn[T] IntMap::union_with(
         Branch(prefix=q, mask=n, left=t_left, right=t_right) as t,
       ) =>
         if m == n && p == q {
-          // The trees have the same prefix. Merge the subtrees
+          // The trees have the same prefix. Merge the subtrees directly.
+          // `Branch` is safe here because neither recursive result can be empty.
           Branch(
             prefix=p,
             mask=m,
@@ -303,21 +411,25 @@ pub fn[T] IntMap::union_with(
             right=go(s_right, t_right),
           )
         } else if m > n && match_prefix(key=q, prefix=p, mask=m) {
-          // q contains p. Merge t with a subtree of s
+          // `t` lives entirely under one child of `s`; recurse only into that side.
           if zero(q, mask=m) {
+            // `t` falls into the left child of `s`.
             Branch(prefix=p, mask=m, left=go(s_left, t), right=s_right)
           } else {
+            // `t` falls into the right child of `s`.
             Branch(prefix=p, mask=m, left=s_left, right=go(s_right, t))
           }
         } else if m < n && match_prefix(key=p, prefix=q, mask=n) {
-          // p contains q. Merge s with a subtree of t
+          // Symmetric case: `s` lives entirely under one child of `t`.
           if zero(p, mask=n) {
+            // `s` falls into the left child of `t`.
             Branch(prefix=q, mask=n, left=go(s, t_left), right=t_right)
           } else {
+            // `s` falls into the right child of `t`.
             Branch(prefix=q, mask=n, left=t_left, right=go(s, t_right))
           }
         } else {
-          // The prefixes disagree
+          // The trees split at this level, so create a new parent branch.
           join(p, s, q, t)
         }
     }
@@ -327,6 +439,8 @@ pub fn[T] IntMap::union_with(
 }
 
 ///|
+/// Keep only keys that appear in both maps and combine their values.
+/// `combine(left, right)` receives the value from the left map first.
 pub fn[T] IntMap::intersection_with(
   combine~ : (T, T) -> T,
   left : IntMap[T],
@@ -334,16 +448,22 @@ pub fn[T] IntMap::intersection_with(
 ) -> IntMap[T] {
   fn go(left : IntMap[T], right : IntMap[T]) -> IntMap[T] {
     match (left, right) {
+      // Intersection with an empty tree is always empty.
       (_, Empty) => Empty
+      // Symmetric empty case.
       (Empty, _) => Empty
       (Leaf(key~, value~), t) =>
         match t.get(key) {
+          // This key is missing from the other tree.
           None => Empty
+          // This key exists on both sides, so keep one leaf.
           Some(v) => Leaf(key~, value=combine(value, v))
         }
       (t, Leaf(key~, value~)) =>
         match t.get(key) {
+          // This key is missing from the other tree.
           None => Empty
+          // This key exists on both sides, so keep one leaf.
           Some(v) => Leaf(key~, value=combine(v, value))
         }
       (
@@ -351,29 +471,34 @@ pub fn[T] IntMap::intersection_with(
         Branch(prefix=q, mask=n, left=t_left, right=t_right) as t,
       ) =>
         if m == n && p == q {
-          // The trees have the same prefix. intersect the subtrees
-          Branch(
+          // Intersections can delete an entire side, so rebuild with the smart
+          // constructor to keep the result canonical.
+          IntMap::branch(
             prefix=p,
             mask=m,
             left=go(s_left, t_left),
             right=go(s_right, t_right),
           )
         } else if m > n && match_prefix(key=q, prefix=p, mask=m) {
-          // q contains p. Merge t with a subtree of s
+          // `t` can intersect only one child of `s`.
           if zero(q, mask=m) {
+            // `t` sits under the left child of `s`.
             go(s_left, t)
           } else {
+            // `t` sits under the right child of `s`.
             go(s_right, t)
           }
         } else if m < n && match_prefix(key=p, prefix=q, mask=n) {
-          // p contains q. Merge s with a subtree of t
+          // Symmetric case: `s` can intersect only one child of `t`.
           if zero(p, mask=n) {
+            // `s` sits under the left child of `t`.
             go(s, t_left)
           } else {
+            // `s` sits under the right child of `t`.
             go(s, t_right)
           }
         } else {
-          // The prefixes disagree
+          // Disjoint prefixes mean there are no shared keys below.
           Empty
         }
     }

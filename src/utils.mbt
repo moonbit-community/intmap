@@ -1,4 +1,5 @@
 ///|
+/// Build an `IntMap` from a standard `Map`.
 pub fn[T] IntMap::from_map(map : Map[Int, T]) -> IntMap[T] {
   let mut intmap = IntMap::empty()
   for k, v in map {
@@ -9,6 +10,7 @@ pub fn[T] IntMap::from_map(map : Map[Int, T]) -> IntMap[T] {
 }
 
 ///|
+/// Build an `IntMap` from a mutable hashmap snapshot.
 pub fn[T] IntMap::from_hashmap(hmap : @hashmap.HashMap[Int, T]) -> IntMap[T] {
   let mut intmap = IntMap::empty()
   for k, v in hmap {
@@ -19,6 +21,8 @@ pub fn[T] IntMap::from_hashmap(hmap : @hashmap.HashMap[Int, T]) -> IntMap[T] {
 }
 
 ///|
+/// Consume `(key, value)` pairs from an iterator.
+/// Later entries override earlier ones when duplicate keys are present.
 pub fn[T] IntMap::from_iter(iter : Iter[(Int, T)]) -> IntMap[T] {
   let mut intmap = IntMap::empty()
   for pair in iter {
@@ -29,6 +33,8 @@ pub fn[T] IntMap::from_iter(iter : Iter[(Int, T)]) -> IntMap[T] {
 }
 
 ///|
+/// Consume entries from an `Iter2`.
+/// Later entries override earlier ones when duplicate keys are present.
 pub fn[T] IntMap::from_iter2(iter2 : Iter2[Int, T]) -> IntMap[T] {
   let mut intmap = IntMap::empty()
   for k, v in iter2 {
@@ -39,6 +45,7 @@ pub fn[T] IntMap::from_iter2(iter2 : Iter2[Int, T]) -> IntMap[T] {
 }
 
 ///|
+/// Materialize the immutable map as a standard `Map`.
 pub fn[T] IntMap::to_map(self : IntMap[T]) -> Map[Int, T] {
   let map = {}
   for k, v in self.iter2() {
@@ -49,6 +56,7 @@ pub fn[T] IntMap::to_map(self : IntMap[T]) -> Map[Int, T] {
 }
 
 ///|
+/// Materialize the immutable map as a mutable hashmap.
 pub fn[T] IntMap::to_hashmap(self : IntMap[T]) -> @hashmap.HashMap[Int, T] {
   let hmap = @hashmap.new()
   for k, v in self.iter2() {
@@ -59,6 +67,9 @@ pub fn[T] IntMap::to_hashmap(self : IntMap[T]) -> @hashmap.HashMap[Int, T] {
 }
 
 ///|
+/// Iterate keys in the tree's natural traversal order.
+/// This order matches `iter()` and follows the unsigned key ordering implied by
+/// the big-endian Patricia tree representation.
 pub fn[T] IntMap::keys(self : IntMap[T]) -> Iter[Int] {
   let stack = [self]
   Iter::new(fn() {
@@ -83,6 +94,7 @@ pub fn[T] IntMap::keys(self : IntMap[T]) -> Iter[Int] {
 }
 
 ///|
+/// Iterate values in the same order as `keys()` and `iter()`.
 pub fn[T] IntMap::values(self : IntMap[T]) -> Iter[T] {
   let stack = [self]
   Iter::new(fn() {
@@ -107,6 +119,7 @@ pub fn[T] IntMap::values(self : IntMap[T]) -> Iter[T] {
 }
 
 ///|
+/// Iterate `(key, value)` pairs in the tree's natural traversal order.
 pub fn[T] IntMap::iter(self : IntMap[T]) -> Iter[(Int, T)] {
   let stack = [self]
   Iter::new(fn() {
@@ -131,6 +144,7 @@ pub fn[T] IntMap::iter(self : IntMap[T]) -> Iter[(Int, T)] {
 }
 
 ///|
+/// `Iter2` variant of `iter()` with the same traversal order.
 pub fn[T] IntMap::iter2(self : IntMap[T]) -> Iter2[Int, T] {
   let stack = [self]
   Iter2::new(fn() {
@@ -155,6 +169,7 @@ pub fn[T] IntMap::iter2(self : IntMap[T]) -> Iter2[Int, T] {
 }
 
 ///|
+/// Visit each entry in iteration order.
 pub fn[T] IntMap::each(
   self : IntMap[T],
   f : (Int, T) -> Unit raise?,
@@ -165,6 +180,7 @@ pub fn[T] IntMap::each(
 }
 
 ///|
+/// Transform values while preserving keys and tree shape.
 pub fn[X, Y] IntMap::map(
   self : IntMap[X],
   f : (X) -> Y raise?,
@@ -178,6 +194,7 @@ pub fn[X, Y] IntMap::map(
 }
 
 ///|
+/// Keep only entries whose values satisfy `p`.
 pub fn[T] IntMap::filter(self : IntMap[T], p : (T) -> Bool) -> IntMap[T] {
   let mut res = IntMap::empty()
   for k, v in self.iter2() {

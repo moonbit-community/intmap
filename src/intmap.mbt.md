@@ -37,7 +37,7 @@ fn[T] BinTrie::lookup(self : BinTrie[T], key : UInt) -> T? {
 }
 ```
 
-为了避免创建过多空树，我们不直接调用值构造子，而是使用branch方法
+为了避免创建过多空树，我们不直接调用值构造子，而是使用`br`方法
 
 ```mbt nocheck
 ///|
@@ -99,6 +99,8 @@ fn zero(k : UInt, mask~ : UInt) -> Bool {
   (k & mask) == 0
 }
 ```
+
+这里有一个很容易忽略的细节：`prefix`只是当前子树公共前缀的压缩表示，并不是树中某个真实存在的键。因此在`lookup`、`remove`这类沿树向下递归的操作里，必须先用`match_prefix`确认待查键确实属于当前子树，再根据分支位决定往左还是往右走。单纯拿键和`prefix`做大小比较是不够的。
 
 现在`branch`方法可以做更多优化, 保证`Branch`节点的子树不含`Empty`.
 
@@ -280,9 +282,9 @@ Big-endian Patricia Tree在Patricia Tree的基础上将计算分支位的顺序�
 
 + 常见情况下合并速度更快。在实践中，intmap里的整数键一般是连续的，这种情况下Big-endian Patricia Tree会有更长的公共前缀，让合并操作更快。
 
-+ 在Big-endian Patricia Tree中，如果把键看作无符号整数，右子树的每个键都大于当前节点的键(反过来，左子树是小于)。在编写查找函数时，只要使用无符号整数的比较就可判断接下来往哪个分支走，在大多数机器上这只需要一条指令即可完成，成本较低。
++ 在Big-endian Patricia Tree中，如果把键看作无符号整数，右子树的每个键都大于该节点记录的`prefix`，左子树的每个键都小于等于它。在前缀已经匹配的前提下，可以用无符号整数的比较快速判断接下来该走哪个分支；在大多数机器上这只需要一条指令即可完成，成本较低。
 
-由于最终版本`IntMap`的实现与前文所述的Little Endian Patricia Tree相差不大，此处不再赘述，有需要的读者可以参考此仓库中的实现：https://github.com/moonbit-community/intmap
+由于最终版本`IntMap`的实现与前文所述的Little Endian Patricia Tree相差不大，此处不再赘述；不过在真正实现时仍要记得保留前缀校验这一步，否则`get`、`remove`之类的操作会错误地闯入一个并不包含目标键的子树。有需要的读者可以参考此仓库中的实现：https://github.com/moonbit-community/intmap
 
 ## 原实现中的一处错误
 

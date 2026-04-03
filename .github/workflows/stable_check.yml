@@ -24,13 +24,10 @@ jobs:
         run: |
           moon version --all
 
-      - name: install module dependencies
+      - name: moon check
         run: |
           moon update
-          moon install
-
-      - name: moon check
-        run: moon check
+          moon check
 
       - name: format diff
         run: |
@@ -49,4 +46,3 @@ jobs:
       - name: moon test
         run: |
           moon test --target all
-          moon test --target native
