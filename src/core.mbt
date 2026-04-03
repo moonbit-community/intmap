@@ -19,7 +19,7 @@ enum IntMap[T] {
   Empty
   Leaf(key~ : Key, value~ : T)
   Branch(prefix~ : Prefix, mask~ : Mask, left~ : IntMap[T], right~ : IntMap[T])
-} derive(Show)
+} derive(Show, Debug)
 
 ///|
 pub fn[T] IntMap::empty() -> IntMap[T] {
@@ -68,7 +68,7 @@ fn UInt::to_hex_str(self : UInt) -> String {
     let r = n & 0x0000000F
     buf.write_char(table[r.reinterpret_as_int()])
     n = n >> 4
-  } else {
+  } nobreak {
     buf.contents().to_unchecked_string().rev()
   }
 }
@@ -83,8 +83,8 @@ test "int to hex string" {
   inspect((0).to_hex_str(), content="00000000")
   inspect((1).to_hex_str(), content="00000001")
   inspect((16).to_hex_str(), content="00000010")
-  inspect(@int.max_value.to_hex_str(), content="7FFFFFFF")
-  inspect(@int.min_value.to_hex_str(), content="80000000")
+  inspect(@int.MAX_VALUE.to_hex_str(), content="7FFFFFFF")
+  inspect(@int.MIN_VALUE.to_hex_str(), content="80000000")
   inspect((-2).to_hex_str(), content="FFFFFFFE")
   inspect((-1).to_hex_str(), content="FFFFFFFF")
   inspect((1 << 16).to_hex_str(), content="00010000")
@@ -262,13 +262,13 @@ test "intmap insert and lookup" {
 ///|
 test "edge case" {
   let mut foo = IntMap::Empty
-  foo = foo.insert(@int.min_value, "min")
-  foo = foo.insert(@int.max_value, "max")
+  foo = foo.insert(@int.MIN_VALUE, "min")
+  foo = foo.insert(@int.MAX_VALUE, "max")
   foo = foo.insert(0, "zero")
   foo = foo.insert(-1, "neg1")
   foo = foo.insert(1, "pos1")
-  inspect(foo[@int.min_value], content="min")
-  inspect(foo[@int.max_value], content="max")
+  inspect(foo[@int.MIN_VALUE], content="min")
+  inspect(foo[@int.MAX_VALUE], content="max")
   inspect(foo[0], content="zero")
   inspect(foo[-1], content="neg1")
   inspect(foo[1], content="pos1")

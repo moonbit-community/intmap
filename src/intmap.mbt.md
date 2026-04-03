@@ -8,7 +8,7 @@
 
 二叉字典树是一种使用每个键的二进制表示决定其位置的二叉树，键的二进制表示是一长串有限的0和1，那么假如当前位是0，就向左子树递归，当前位为1则向右子树递归.
 
-```mbt
+```mbt nocheck
 ///|
 enum BinTrie[T] {
   Empty
@@ -21,7 +21,7 @@ enum BinTrie[T] {
 
 > 此处读取二进制位的顺序是从整数最小位到最高位
 
-```mbt
+```mbt nocheck
 ///|
 fn[T] BinTrie::lookup(self : BinTrie[T], key : UInt) -> T? {
   match self {
@@ -39,7 +39,7 @@ fn[T] BinTrie::lookup(self : BinTrie[T], key : UInt) -> T? {
 
 为了避免创建过多空树，我们不直接调用值构造子，而是使用branch方法
 
-```mbt
+```mbt nocheck
 ///|
 fn[T] BinTrie::br(left : BinTrie[T], right : BinTrie[T]) -> BinTrie[T] {
   match (left, right) {
@@ -55,7 +55,7 @@ fn[T] BinTrie::br(left : BinTrie[T], right : BinTrie[T]) -> BinTrie[T] {
 
 Patricia Tree在二叉字典树的基础上保存了更多信息以加速查找,在每个分叉的地方，它都保留子树中所有键的*公共前缀*(虽然此处是从最低位开始计算，但我们仍然使用前缀这种说法)，并用一个无符号整数标记当前的分支位(branching bit).这样一来，查找时需要经过的分支数量大大减少。
 
-```mbt
+```mbt nocheck
 ///|
 enum PatriciaTree[T] {
   Empty
@@ -102,7 +102,7 @@ fn zero(k : UInt, mask~ : UInt) -> Bool {
 
 现在`branch`方法可以做更多优化, 保证`Branch`节点的子树不含`Empty`.
 
-```mbt
+```mbt nocheck
 ///|
 fn[T] PatriciaTree::branch(
   prefix~ : UInt,
@@ -150,7 +150,7 @@ fn[T] PatriciaTree::branch(
 00000100000
 ```
 
-```mbt
+```mbt nocheck
 ///|
 fn[T] join(
   p0 : UInt,
@@ -178,7 +178,7 @@ fn gen_mask(p0 : UInt, p1 : UInt) -> UInt {
 
 万事俱备，现在可以开始编写`insert_with`函数了。对`Empty`和`Leaf`分支的处理都非常直接，而对于`Branch`, 在前缀互不包含时调用join，其他情况则根据分支位选择一个分支递归下去。
 
-```mbt
+```mbt nocheck
 ///|
 fn[T] PatriciaTree::insert_with(
   self : PatriciaTree[T],
@@ -219,7 +219,7 @@ fn[T] PatriciaTree::insert_with(
 
 合并操作基本遵循相同的逻辑，略有不同的是它还要考虑前缀与掩码完全相同的情况。
 
-```mbt
+```mbt nocheck
 ///|
 fn[T] PatriciaTree::union_with(
   combine~ : (T, T) -> T,

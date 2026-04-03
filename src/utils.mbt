@@ -3,7 +3,7 @@ pub fn[T] IntMap::from_map(map : Map[Int, T]) -> IntMap[T] {
   let mut intmap = IntMap::empty()
   for k, v in map {
     intmap = intmap.insert(k, v)
-  } else {
+  } nobreak {
     return intmap
   }
 }
@@ -13,7 +13,7 @@ pub fn[T] IntMap::from_hashmap(hmap : @hashmap.HashMap[Int, T]) -> IntMap[T] {
   let mut intmap = IntMap::empty()
   for k, v in hmap {
     intmap = intmap.insert(k, v)
-  } else {
+  } nobreak {
     return intmap
   }
 }
@@ -23,7 +23,7 @@ pub fn[T] IntMap::from_iter(iter : Iter[(Int, T)]) -> IntMap[T] {
   let mut intmap = IntMap::empty()
   for pair in iter {
     intmap = intmap.insert(pair.0, pair.1)
-  } else {
+  } nobreak {
     return intmap
   }
 }
@@ -33,7 +33,7 @@ pub fn[T] IntMap::from_iter2(iter2 : Iter2[Int, T]) -> IntMap[T] {
   let mut intmap = IntMap::empty()
   for k, v in iter2 {
     intmap = intmap.insert(k, v)
-  } else {
+  } nobreak {
     return intmap
   }
 }
@@ -43,7 +43,7 @@ pub fn[T] IntMap::to_map(self : IntMap[T]) -> Map[Int, T] {
   let map = {}
   for k, v in self.iter2() {
     map[k] = v
-  } else {
+  } nobreak {
     return map
   }
 }
@@ -53,7 +53,7 @@ pub fn[T] IntMap::to_hashmap(self : IntMap[T]) -> @hashmap.HashMap[Int, T] {
   let hmap = @hashmap.new()
   for k, v in self.iter2() {
     hmap[k] = v
-  } else {
+  } nobreak {
     return hmap
   }
 }
@@ -76,7 +76,7 @@ pub fn[T] IntMap::keys(self : IntMap[T]) -> Iter[Int] {
       } else {
         return None
       }
-    } else {
+    } nobreak {
       abort("impossible")
     }
   })
@@ -100,7 +100,7 @@ pub fn[T] IntMap::values(self : IntMap[T]) -> Iter[T] {
       } else {
         return None
       }
-    } else {
+    } nobreak {
       abort("impossible")
     }
   })
@@ -124,7 +124,7 @@ pub fn[T] IntMap::iter(self : IntMap[T]) -> Iter[(Int, T)] {
       } else {
         return None
       }
-    } else {
+    } nobreak {
       abort("impossible")
     }
   })
@@ -148,7 +148,7 @@ pub fn[T] IntMap::iter2(self : IntMap[T]) -> Iter2[Int, T] {
       } else {
         return None
       }
-    } else {
+    } nobreak {
       abort("impossible")
     }
   })
@@ -184,7 +184,7 @@ pub fn[T] IntMap::filter(self : IntMap[T], p : (T) -> Bool) -> IntMap[T] {
     if p(v) {
       res = res.insert(k, v)
     }
-  } else {
+  } nobreak {
     return res
   }
 }

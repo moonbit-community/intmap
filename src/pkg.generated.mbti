@@ -2,6 +2,7 @@
 package "myfreess/intmap"
 
 import {
+  "moonbitlang/core/debug",
   "moonbitlang/core/hashmap",
 }
 
@@ -10,7 +11,7 @@ import {
 // Errors
 
 // Types and methods
-type IntMap[T]
+type IntMap[T] derive(Show, @debug.Debug)
 pub fn[T] IntMap::each(Self[T], (Int, T) -> Unit raise?) -> Unit raise?
 pub fn[T] IntMap::empty() -> Self[T]
 pub fn[T] IntMap::filter(Self[T], (T) -> Bool) -> Self[T]
@@ -37,7 +38,6 @@ pub fn[T] IntMap::union(Self[T], Self[T]) -> Self[T]
 pub fn[T] IntMap::union_with(combine~ : (T, T) -> T, Self[T], Self[T]) -> Self[T]
 pub fn[T] IntMap::values(Self[T]) -> Iter[T]
 pub impl[T : Add] Add for IntMap[T]
-pub impl[T : Show] Show for IntMap[T]
 
 // Type aliases
 
