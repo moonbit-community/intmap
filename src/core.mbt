@@ -19,7 +19,7 @@ enum IntMap[T] {
   Empty
   Leaf(key~ : Key, value~ : T)
   Branch(prefix~ : Prefix, mask~ : Mask, left~ : IntMap[T], right~ : IntMap[T])
-} derive(Show, Debug)
+} derive(Debug)
 
 ///|
 pub fn[T] IntMap::empty() -> IntMap[T] {
