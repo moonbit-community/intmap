@@ -11,7 +11,7 @@ import {
 // Errors
 
 // Types and methods
-type IntMap[T] derive(Show, @debug.Debug)
+type IntMap[T] derive(@debug.Debug)
 pub fn[T] IntMap::each(Self[T], (Int, T) -> Unit raise?) -> Unit raise?
 pub fn[T] IntMap::empty() -> Self[T]
 pub fn[T] IntMap::filter(Self[T], (T) -> Bool) -> Self[T]
