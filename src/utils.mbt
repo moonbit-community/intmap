@@ -50,7 +50,7 @@ pub fn[T] IntMap::to_map(self : IntMap[T]) -> Map[Int, T] {
 
 ///|
 pub fn[T] IntMap::to_hashmap(self : IntMap[T]) -> @hashmap.HashMap[Int, T] {
-  let hmap = @hashmap.new()
+  let hmap = @hashmap.HashMap([], capacity=self.size())
   for k, v in self.iter2() {
     hmap[k] = v
   } nobreak {
