@@ -63,13 +63,13 @@ fn UInt::to_hex_str(self : UInt) -> String {
   let table = [
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
   ]
-  let buf = @buffer.new(size_hint=8)
+  let buf = StringBuilder::new(size_hint=8)
   for i = 0; i < 8; i = i + 1 {
     let r = n & 0x0000000F
     buf.write_char(table[r.reinterpret_as_int()])
     n = n >> 4
   } nobreak {
-    buf.contents().to_unchecked_string().rev()
+    buf.to_string().rev()
   }
 }
 
@@ -241,7 +241,8 @@ pub fn[T] IntMap::get(self : IntMap[T], k : Key) -> T? {
 }
 
 ///|
-pub fn[T] IntMap::op_get(self : IntMap[T], key : Key) -> T {
+#alias("_[_]")
+pub fn[T] IntMap::unsafe_get(self : IntMap[T], key : Key) -> T {
   match self.get(key) {
     None => abort("IntMap::op_get: invalid key \{key}")
     Some(value) => value

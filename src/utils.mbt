@@ -40,7 +40,7 @@ pub fn[T] IntMap::from_iter2(iter2 : Iter2[Int, T]) -> IntMap[T] {
 
 ///|
 pub fn[T] IntMap::to_map(self : IntMap[T]) -> Map[Int, T] {
-  let map = {}
+  let map = Map([])
   for k, v in self.iter2() {
     map[k] = v
   } nobreak {
@@ -197,7 +197,7 @@ pub fn[T] IntMap::union(self : IntMap[T], other : IntMap[T]) -> IntMap[T] {
 }
 
 ///|
-pub impl[T : Add] Add for IntMap[T] with add(self, other) {
+pub impl[T : Add] Add for IntMap[T] with fn add(self, other) {
   IntMap::union_with(combine=(left, right) => left + right, self, other)
 }
 

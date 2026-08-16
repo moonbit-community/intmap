@@ -12,6 +12,7 @@ import {
 
 // Types and methods
 type IntMap[T] derive(@debug.Debug)
+pub fn[T : Add] IntMap::add(Self[T], Self[T]) -> Self[T]
 pub fn[T] IntMap::each(Self[T], (Int, T) -> Unit raise?) -> Unit raise?
 pub fn[T] IntMap::empty() -> Self[T]
 pub fn[T] IntMap::filter(Self[T], (T) -> Bool) -> Self[T]
@@ -29,17 +30,18 @@ pub fn[T] IntMap::iter(Self[T]) -> Iter[(Int, T)]
 pub fn[T] IntMap::iter2(Self[T]) -> Iter2[Int, T]
 pub fn[T] IntMap::keys(Self[T]) -> Iter[Int]
 pub fn[X, Y] IntMap::map(Self[X], (X) -> Y raise?) -> Self[Y] raise?
-pub fn[T] IntMap::op_get(Self[T], Int) -> T
 pub fn[T] IntMap::remove(Self[T], Int) -> Self[T]
 pub fn[T] IntMap::size(Self[T]) -> Int
 pub fn[T] IntMap::to_hashmap(Self[T]) -> @hashmap.HashMap[Int, T]
 pub fn[T] IntMap::to_map(Self[T]) -> Map[Int, T]
+pub fn[T : @debug.Debug] IntMap::to_repr(Self[T]) -> @debug.Repr
 pub fn[T] IntMap::union(Self[T], Self[T]) -> Self[T]
 pub fn[T] IntMap::union_with(combine~ : (T, T) -> T, Self[T], Self[T]) -> Self[T]
+#alias("_[_]")
+pub fn[T] IntMap::unsafe_get(Self[T], Int) -> T
 pub fn[T] IntMap::values(Self[T]) -> Iter[T]
 pub impl[T : Add] Add for IntMap[T]
 
 // Type aliases
 
 // Traits
-
