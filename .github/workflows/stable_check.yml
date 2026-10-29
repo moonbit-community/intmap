@@ -10,6 +10,8 @@ jobs:
   check:
     strategy:    
       fail-fast: false
+      matrix:
+        channel: [latest, nightly]
     runs-on: ubuntu-latest
     continue-on-error: false
     steps:
@@ -17,7 +19,7 @@ jobs:
 
       - name: install
         run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- '${{ matrix.channel }}'
           echo "$HOME/.moon/bin" >> $GITHUB_PATH
 
       - name: moon version
@@ -27,7 +29,7 @@ jobs:
       - name: install module dependencies
         run: |
           moon update
-          moon check --deny-warn
+          moon check --target all --deny-warn
 
       - name: moon check
         run: moon check
@@ -49,4 +51,3 @@ jobs:
       - name: moon test
         run: |
           moon test --target all
-          moon test --target native

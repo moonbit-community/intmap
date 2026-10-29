@@ -1,7 +1,7 @@
 // Big-endian Patricia Tree
 
 ///|
-type Key = Int
+type Key = Int32
 
 ///|
 fn Key::as_prefix(self : Key) -> Prefix {
@@ -9,10 +9,10 @@ fn Key::as_prefix(self : Key) -> Prefix {
 }
 
 ///|
-type Prefix = UInt
+type Prefix = UInt32
 
 ///|
-type Mask = UInt // Mask must be 2 ^ n
+type Mask = UInt32 // Mask must be 2 ^ n
 
 ///|
 enum IntMap[T] {
@@ -49,7 +49,7 @@ pub fn[T] IntMap::is_empty(self : IntMap[T]) -> Bool {
 }
 
 ///|
-pub fn[T] IntMap::size(self : IntMap[T]) -> Int {
+pub fn[T] IntMap::size(self : IntMap[T]) -> Int32 {
   match self {
     Empty => 0
     Leaf(..) => 1
@@ -58,23 +58,23 @@ pub fn[T] IntMap::size(self : IntMap[T]) -> Int {
 }
 
 ///|
-fn UInt::to_hex_str(self : UInt) -> String {
+fn UInt32::to_hex_str(self : UInt32) -> String {
   let mut n = self
   let table = [
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
   ]
-  let buf = @buffer.new(size_hint=8)
+  let buf = StringBuilder(size_hint=8)
   for i = 0; i < 8; i = i + 1 {
     let r = n & 0x0000000F
     buf.write_char(table[r.reinterpret_as_int()])
     n = n >> 4
   } nobreak {
-    buf.contents().to_unchecked_string().rev()
+    buf.to_string().rev()
   }
 }
 
 ///|
-fn Int::to_hex_str(self : Int) -> String {
+fn Int32::to_hex_str(self : Int32) -> String {
   self.reinterpret_as_uint().to_hex_str()
 }
 
@@ -97,17 +97,17 @@ test "unsigned int to hex string" {
 }
 
 ///|
-fn zero(key : UInt, mask~ : Mask) -> Bool {
+fn zero(key : UInt32, mask~ : Mask) -> Bool {
   (key & mask) == 0
 }
 
 ///|
-fn get_prefix(key : UInt, mask~ : UInt) -> Prefix {
+fn get_prefix(key : UInt32, mask~ : UInt32) -> Prefix {
   (key | (mask - 1)) & mask.lnot()
 }
 
 ///|
-fn match_prefix(key~ : UInt, prefix~ : Prefix, mask~ : Mask) -> Bool {
+fn match_prefix(key~ : UInt32, prefix~ : Prefix, mask~ : Mask) -> Bool {
   get_prefix(key, mask~) == prefix
 }
 
@@ -241,7 +241,8 @@ pub fn[T] IntMap::get(self : IntMap[T], k : Key) -> T? {
 }
 
 ///|
-pub fn[T] IntMap::op_get(self : IntMap[T], key : Key) -> T {
+#alias("_[_]")
+pub fn[T] IntMap::unsafe_get(self : IntMap[T], key : Key) -> T {
   match self.get(key) {
     None => abort("IntMap::op_get: invalid key \{key}")
     Some(value) => value
@@ -251,7 +252,7 @@ pub fn[T] IntMap::op_get(self : IntMap[T], key : Key) -> T {
 ///|
 test "intmap insert and lookup" {
   let mut foo = IntMap::Empty
-  fn prop_insert_lookup_identity(i : Int) -> Bool {
+  fn prop_insert_lookup_identity(i : Int32) -> Bool {
     foo = foo.insert(i, i)
     foo[i] == i
   }
@@ -380,4 +381,14 @@ pub fn[T] IntMap::intersection_with(
   }
 
   go(left, right)
+}
+
+///|
+// Exercise the deprecated spelling to preserve existing callers.
+#warnings("-deprecated_syntax")
+test "indexing and legacy op_get retain lookup behavior" {
+  let map = IntMap::empty().insert(7, "value")
+  assert_eq(map[7], "value")
+  assert_eq(map.op_get(7), "value")
+  assert_eq(map.unsafe_get(7), "value")
 }

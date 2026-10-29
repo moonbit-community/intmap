@@ -23,7 +23,7 @@ enum BinTrie[T] {
 
 ```mbt nocheck
 ///|
-fn[T] BinTrie::lookup(self : BinTrie[T], key : UInt) -> T? {
+fn[T] BinTrie::lookup(self : BinTrie[T], key : UInt32) -> T? {
   match self {
     Empty => None
     Leaf(value) => Some(value)
@@ -59,17 +59,17 @@ Patricia Tree在二叉字典树的基础上保存了更多信息以加速查找,
 ///|
 enum PatriciaTree[T] {
   Empty
-  Leaf(key~ : Int, value~ : T)
+  Leaf(key~ : Int32, value~ : T)
   Branch(
-    prefix~ : UInt,
-    mask~ : UInt,
+    prefix~ : UInt32,
+    mask~ : UInt32,
     left~ : PatriciaTree[T],
     right~ : PatriciaTree[T]
   )
 }
 
 ///|
-fn[T] PatriciaTree::lookup(self : PatriciaTree[T], key : Int) -> T? {
+fn[T] PatriciaTree::lookup(self : PatriciaTree[T], key : Int32) -> T? {
   match self {
     Empty => None
     Leaf(key=k, value~) => if k == key { Some(value) } else { None }
@@ -85,17 +85,17 @@ fn[T] PatriciaTree::lookup(self : PatriciaTree[T], key : Int) -> T? {
 }
 
 ///|
-fn get_prefix(key : UInt, mask~ : UInt) -> UInt {
+fn get_prefix(key : UInt32, mask~ : UInt32) -> UInt32 {
   key & (mask - 1U)
 }
 
 ///|
-fn match_prefix(key~ : UInt, prefix~ : UInt, mask~ : UInt) -> Bool {
+fn match_prefix(key~ : UInt32, prefix~ : UInt32, mask~ : UInt32) -> Bool {
   get_prefix(key, mask~) == prefix
 }
 
 ///|
-fn zero(k : UInt, mask~ : UInt) -> Bool {
+fn zero(k : UInt32, mask~ : UInt32) -> Bool {
   (k & mask) == 0
 }
 ```
@@ -105,8 +105,8 @@ fn zero(k : UInt, mask~ : UInt) -> Bool {
 ```mbt nocheck
 ///|
 fn[T] PatriciaTree::branch(
-  prefix~ : UInt,
-  mask~ : UInt,
+  prefix~ : UInt32,
+  mask~ : UInt32,
   left~ : PatriciaTree[T],
   right~ : PatriciaTree[T],
 ) -> PatriciaTree[T] {
@@ -153,9 +153,9 @@ fn[T] PatriciaTree::branch(
 ```mbt nocheck
 ///|
 fn[T] join(
-  p0 : UInt,
+  p0 : UInt32,
   t0 : PatriciaTree[T],
-  p1 : UInt,
+  p1 : UInt32,
   t1 : PatriciaTree[T],
 ) -> PatriciaTree[T] {
   let mask = gen_mask(p0, p1)
@@ -167,8 +167,8 @@ fn[T] join(
 }
 
 ///|
-fn gen_mask(p0 : UInt, p1 : UInt) -> UInt {
-  fn lowest_bit(x : UInt) -> UInt {
+fn gen_mask(p0 : UInt32, p1 : UInt32) -> UInt32 {
+  fn lowest_bit(x : UInt32) -> UInt32 {
     x & x.reinterpret_as_int().neg().reinterpret_as_uint()
   }
 
@@ -182,7 +182,7 @@ fn gen_mask(p0 : UInt, p1 : UInt) -> UInt {
 ///|
 fn[T] PatriciaTree::insert_with(
   self : PatriciaTree[T],
-  k : Int,
+  k : Int32,
   v : T,
   combine~ : (T, T) -> T,
 ) -> PatriciaTree[T] {

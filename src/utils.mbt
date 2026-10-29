@@ -1,5 +1,5 @@
 ///|
-pub fn[T] IntMap::from_map(map : Map[Int, T]) -> IntMap[T] {
+pub fn[T] IntMap::from_map(map : Map[Int32, T]) -> IntMap[T] {
   let mut intmap = IntMap::empty()
   for k, v in map {
     intmap = intmap.insert(k, v)
@@ -9,7 +9,7 @@ pub fn[T] IntMap::from_map(map : Map[Int, T]) -> IntMap[T] {
 }
 
 ///|
-pub fn[T] IntMap::from_hashmap(hmap : @hashmap.HashMap[Int, T]) -> IntMap[T] {
+pub fn[T] IntMap::from_hashmap(hmap : @hashmap.HashMap[Int32, T]) -> IntMap[T] {
   let mut intmap = IntMap::empty()
   for k, v in hmap {
     intmap = intmap.insert(k, v)
@@ -19,7 +19,7 @@ pub fn[T] IntMap::from_hashmap(hmap : @hashmap.HashMap[Int, T]) -> IntMap[T] {
 }
 
 ///|
-pub fn[T] IntMap::from_iter(iter : Iter[(Int, T)]) -> IntMap[T] {
+pub fn[T] IntMap::from_iter(iter : Iter[(Int32, T)]) -> IntMap[T] {
   let mut intmap = IntMap::empty()
   for pair in iter {
     intmap = intmap.insert(pair.0, pair.1)
@@ -29,7 +29,7 @@ pub fn[T] IntMap::from_iter(iter : Iter[(Int, T)]) -> IntMap[T] {
 }
 
 ///|
-pub fn[T] IntMap::from_iter2(iter2 : Iter2[Int, T]) -> IntMap[T] {
+pub fn[T] IntMap::from_iter2(iter2 : Iter2[Int32, T]) -> IntMap[T] {
   let mut intmap = IntMap::empty()
   for k, v in iter2 {
     intmap = intmap.insert(k, v)
@@ -39,8 +39,8 @@ pub fn[T] IntMap::from_iter2(iter2 : Iter2[Int, T]) -> IntMap[T] {
 }
 
 ///|
-pub fn[T] IntMap::to_map(self : IntMap[T]) -> Map[Int, T] {
-  let map = {}
+pub fn[T] IntMap::to_map(self : IntMap[T]) -> Map[Int32, T] {
+  let map = Map([])
   for k, v in self.iter2() {
     map[k] = v
   } nobreak {
@@ -49,7 +49,7 @@ pub fn[T] IntMap::to_map(self : IntMap[T]) -> Map[Int, T] {
 }
 
 ///|
-pub fn[T] IntMap::to_hashmap(self : IntMap[T]) -> @hashmap.HashMap[Int, T] {
+pub fn[T] IntMap::to_hashmap(self : IntMap[T]) -> @hashmap.HashMap[Int32, T] {
   let hmap = @hashmap.HashMap([], capacity=self.size())
   for k, v in self.iter2() {
     hmap[k] = v
@@ -59,7 +59,7 @@ pub fn[T] IntMap::to_hashmap(self : IntMap[T]) -> @hashmap.HashMap[Int, T] {
 }
 
 ///|
-pub fn[T] IntMap::keys(self : IntMap[T]) -> Iter[Int] {
+pub fn[T] IntMap::keys(self : IntMap[T]) -> Iter[Int32] {
   let stack = [self]
   Iter::new(fn() {
     while true {
@@ -107,7 +107,7 @@ pub fn[T] IntMap::values(self : IntMap[T]) -> Iter[T] {
 }
 
 ///|
-pub fn[T] IntMap::iter(self : IntMap[T]) -> Iter[(Int, T)] {
+pub fn[T] IntMap::iter(self : IntMap[T]) -> Iter[(Int32, T)] {
   let stack = [self]
   Iter::new(fn() {
     while true {
@@ -131,7 +131,7 @@ pub fn[T] IntMap::iter(self : IntMap[T]) -> Iter[(Int, T)] {
 }
 
 ///|
-pub fn[T] IntMap::iter2(self : IntMap[T]) -> Iter2[Int, T] {
+pub fn[T] IntMap::iter2(self : IntMap[T]) -> Iter2[Int32, T] {
   let stack = [self]
   Iter2::new(fn() {
     while true {
@@ -157,7 +157,7 @@ pub fn[T] IntMap::iter2(self : IntMap[T]) -> Iter2[Int, T] {
 ///|
 pub fn[T] IntMap::each(
   self : IntMap[T],
-  f : (Int, T) -> Unit raise?,
+  f : (Int32, T) -> Unit raise?,
 ) -> Unit raise? {
   for k, v in self.iter2() {
     f(k, v)
@@ -197,7 +197,7 @@ pub fn[T] IntMap::union(self : IntMap[T], other : IntMap[T]) -> IntMap[T] {
 }
 
 ///|
-pub impl[T : Add] Add for IntMap[T] with add(self, other) {
+pub impl[T : Add] Add for IntMap[T] with fn add(self, other) {
   IntMap::union_with(combine=(left, right) => left + right, self, other)
 }
 

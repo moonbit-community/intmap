@@ -1,8 +1,8 @@
 import {
   "moonbitlang/quickcheck" @qcheck,
+  "moonbitlang/core/debug",
   "moonbitlang/core/hashmap",
   "moonbitlang/core/int",
-  "moonbitlang/core/buffer",
 }
 
 import {
